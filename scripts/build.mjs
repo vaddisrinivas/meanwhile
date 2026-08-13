@@ -97,6 +97,8 @@ async function render() {
     [".agents/skills/meanwhile/SKILL.md", skill],
     [".agents/skills/meanwhile/agents/openai.yaml", openaiMetadata],
     [".agents/skills/meanwhile/references/quests.json", catalogJson],
+    ["skills/meanwhile/SKILL.md", skill],
+    ["skills/meanwhile/references/quests.json", catalogJson],
     ...(hasWorker ? [["worker/src/redirects.ts", `export const redirects = ${JSON.stringify(redirects, null, 2)} as const;\n`]] : [])
   ]);
 

@@ -38,6 +38,14 @@ Dry run:
 node scripts/install.mjs --target all --scope user --dry-run
 ```
 
+Host-native installs:
+
+```sh
+gemini extensions install https://github.com/vaddisrinivas/meanwhile --consent
+claude plugin marketplace add vaddisrinivas/meanwhile
+claude plugin install meanwhile@meanwhile
+```
+
 The universal Agent Skills copy at `~/.agents/skills/meanwhile` supports Codex, Cursor, Gemini CLI, OpenCode, and GitHub Copilot. Claude Code reads `~/.claude/skills/meanwhile`. Project-only installation is also available:
 
 ```sh
@@ -76,6 +84,10 @@ scripts/validate.mjs                Dependency-free validator
 scripts/install.mjs                 Cross-agent installer
 meanwhile/SKILL.md                  Canonical behavior contract
 .agents/skills/meanwhile/           Generated universal skill copy
+skills/meanwhile/                   Generated Gemini/Claude plugin skill copy
+.claude-plugin/plugin.json          Claude plugin manifest
+.claude-plugin/marketplace.json     Claude marketplace manifest
+gemini-extension.json               Gemini CLI extension manifest
 .github/workflows/pages.yml         GitHub Pages deployment
 launch/                             Launch copy and video handoff
 ```

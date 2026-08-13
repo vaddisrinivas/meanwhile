@@ -1,0 +1,25 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "meanwhile",
+  "description": "Optional, bounded side quests while coding agents continue substantial work.",
+  "owner": {
+    "name": "Srinivas Vaddisrinivas"
+  },
+  "plugins": [
+    {
+      "name": "meanwhile",
+      "displayName": "Meanwhile",
+      "source": "./",
+      "description": "Offer one optional learning, recovery, play, or reality-check quest while a coding agent continues.",
+      "version": "0.4.0",
+      "author": {
+        "name": "Srinivas Vaddisrinivas"
+      },
+      "homepage": "https://vaddisrinivas.github.io/meanwhile/",
+      "repository": "https://github.com/vaddisrinivas/meanwhile",
+      "license": "MIT",
+      "category": "productivity",
+      "keywords": ["agent-skills", "focus", "learning", "coding-agents"]
+    }
+  ]
+}

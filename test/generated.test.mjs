@@ -26,8 +26,10 @@ test("generated pages contain no template markers", async () => {
 
 test("universal skill copy and bundled catalogue match their sources", async () => {
   assert.equal(await read("meanwhile/SKILL.md"), await read(".agents/skills/meanwhile/SKILL.md"));
+  assert.equal(await read("meanwhile/SKILL.md"), await read("skills/meanwhile/SKILL.md"));
   assert.equal(await read("quests.json"), await read("meanwhile/references/quests.json"));
   assert.equal(await read("quests.json"), await read(".agents/skills/meanwhile/references/quests.json"));
+  assert.equal(await read("quests.json"), await read("skills/meanwhile/references/quests.json"));
 });
 
 test("installer resolves universal and Claude destinations", async () => {

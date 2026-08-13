@@ -1,0 +1,13 @@
+{
+  "name": "meanwhile",
+  "version": "0.4.0",
+  "description": "Offer one optional, bounded side quest while a coding agent continues substantial work.",
+  "author": {
+    "name": "Srinivas Vaddisrinivas",
+    "url": "https://github.com/vaddisrinivas"
+  },
+  "homepage": "https://vaddisrinivas.github.io/meanwhile/",
+  "repository": "https://github.com/vaddisrinivas/meanwhile",
+  "license": "MIT",
+  "keywords": ["agent-skills", "focus", "learning", "coding-agents"]
+}
