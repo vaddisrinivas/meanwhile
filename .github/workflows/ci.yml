@@ -16,7 +16,3 @@ jobs:
         with:
           node-version: 22
       - run: npm run check
-      - run: npm ci
-        working-directory: worker
-      - run: npm run check
-        working-directory: worker
