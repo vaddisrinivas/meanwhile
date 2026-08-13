@@ -1,0 +1,2285 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Side quests from your AI: useful checks, relevant learning, finite games, and small resets while the main work continues.">
+  <meta property="og:title" content="Meanwhile | Side quests from your AI">
+  <meta property="og:description" content="Stop watching the spinner. Do one fitting thing while your AI keeps working.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="assets/meanwhile-social.png">
+
+  <title>Meanwhile | Side quests from your AI</title>
+  <style>
+    :root {
+      --ink: #171918;
+      --paper: #f4f3ed;
+      --white: #fffefa;
+      --line: #d5d4cc;
+      --muted: #686b65;
+      --red: #ed4b35;
+      --yellow: #f1ca4b;
+      --green: #267a58;
+    }
+    * { box-sizing: border-box; }
+    html { background: var(--paper); scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(rgba(23,25,24,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(23,25,24,.025) 1px, transparent 1px),
+        var(--paper);
+      background-size: 32px 32px;
+      font: 15px/1.5 Arial, Helvetica, sans-serif;
+    }
+    button, input, select { color: inherit; font: inherit; }
+    button, a, select { -webkit-tap-highlight-color: transparent; }
+    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 3px solid rgba(237,75,53,.3);
+      outline-offset: 2px;
+    }
+    .topbar {
+      height: 58px;
+      padding: 0 max(18px, 4vw);
+      color: white;
+      background: var(--ink);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 900; }
+    .mark {
+      width: 28px; height: 28px; display: grid; place-items: center;
+      color: var(--ink); background: var(--yellow); font: 800 15px ui-monospace, monospace;
+    }
+    .data-link { color: #d8dad5; font: 11px ui-monospace, monospace; text-decoration: none; }
+    .data-link:hover { color: white; text-decoration: underline; }
+    .controls {
+      max-width: 1440px; margin: auto; padding: 16px max(18px,4vw);
+      border-bottom: 1px solid var(--line);
+      display: flex; gap: 18px; align-items: center; justify-content: space-between;
+    }
+    .intro {
+      max-width: 1440px; margin: auto; padding: 72px max(18px,4vw) 38px;
+    }
+    .intro h1 {
+      max-width: 980px; margin: 0 0 20px;
+      font-size: clamp(48px,7vw,96px); line-height: .94;
+    }
+    .intro p { max-width: 760px; margin: 0; color: #4f524d; font-size: 18px; }
+    .pack-links {
+      max-width: 1440px; margin: auto; padding: 0 max(18px,4vw) 32px;
+      display: flex; flex-wrap: wrap; gap: 7px;
+    }
+    .pack-links a {
+      min-height: 34px; padding: 0 11px; display: inline-flex; align-items: center;
+      border: 1px solid var(--line); background: rgba(255,254,250,.58);
+      color: inherit; font-size: 12px; font-weight: 800; text-decoration: none;
+    }
+    .pack-links a:hover { border-color: var(--ink); background: var(--white); }
+    .model-switcher {
+      --cube-depth: .84em;
+      width: 3.5em; height: .84em; margin: 0 .05em;
+      display: inline-block; position: relative; vertical-align: -.06em;
+      perspective: 8em;
+    }
+    .model-cube {
+      width: 100%; height: 100%; position: relative; display: block;
+      transform-style: preserve-3d;
+      transition: transform .72s cubic-bezier(.2,.75,.2,1);
+    }
+    .model-face {
+      position: absolute; inset: 0;
+      display: grid; place-items: center;
+      border: .025em solid var(--ink);
+      color: var(--ink); background: var(--yellow);
+      font-size: .48em; font-weight: 900; line-height: 1;
+      overflow: hidden; white-space: nowrap;
+    }
+    .model-face:nth-child(2) { background: #72c7a4; }
+    .model-face:nth-child(3) { color: white; background: var(--red); }
+    .model-face:nth-child(4) { background: var(--white); }
+    .model-face.front { transform: translateZ(calc(var(--cube-depth) / 2)); }
+    .model-face.bottom { transform: rotateX(-90deg) translateZ(calc(var(--cube-depth) / 2)); }
+    .model-face.back { transform: rotateX(-180deg) translateZ(calc(var(--cube-depth) / 2)); }
+    .model-face.top { transform: rotateX(90deg) translateZ(calc(var(--cube-depth) / 2)); }
+    .model-switcher button {
+      position: absolute; inset: 0; z-index: 2;
+      width: 100%; height: 100%; padding: 0; cursor: pointer;
+      border: 0; background: transparent;
+    }
+    .sr-only {
+      width: 1px; height: 1px; padding: 0; margin: -1px;
+      position: absolute; overflow: hidden; clip: rect(0,0,0,0);
+      white-space: nowrap; border: 0;
+    }
+    .segments { display: flex; flex-wrap: wrap; gap: 4px; }
+    .segments button {
+      min-height: 34px; padding: 0 12px; cursor: pointer;
+      background: transparent; border: 1px solid transparent; font-size: 12px; font-weight: 800;
+    }
+    .segments button:hover { border-color: #aaa9a2; }
+    .segments button.active { color: white; background: var(--ink); }
+    .fields { display: flex; gap: 12px; }
+    .fields label { display: flex; gap: 7px; align-items: center; }
+    .fields span, .eyebrow, .receipt span, .reason > span, .library-kicker {
+      color: var(--muted); font: 10px ui-monospace, monospace; text-transform: uppercase;
+    }
+    select {
+      height: 34px; padding: 0 28px 0 8px; border-radius: 0;
+      border: 1px solid var(--line); background: var(--white); cursor: pointer;
+    }
+    .workspace { max-width: 1440px; min-height: 470px; margin: auto; }
+    .stage {
+      min-width: 0; padding: 60px max(24px,5vw); border-top: 1px solid var(--line);
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .eyebrow { color: var(--red); font-weight: 800; }
+    h1 {
+      max-width: 920px; margin: 16px 0 24px;
+      font-size: clamp(43px,6vw,84px); line-height: .96; text-wrap: balance;
+    }
+    .prompt { max-width: 700px; margin: 0; color: #454843; font-size: 18px; line-height: 1.55; }
+    .receipt {
+      max-width: 700px; margin: 30px 0; padding: 4px 0 4px 16px;
+      border-left: 3px solid var(--yellow); display: grid; gap: 4px;
+    }
+    .receipt strong { font-size: 14px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .action {
+      min-width: 150px; height: 48px; padding: 0 16px; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: space-between; gap: 18px;
+      border: 1px solid var(--ink); background: var(--ink); color: white;
+      font-weight: 800; text-decoration: none;
+    }
+    .action:hover { background: var(--red); border-color: var(--red); }
+    .action.secondary { color: var(--ink); background: transparent; }
+    .action.secondary:hover { background: var(--white); border-color: var(--ink); }
+    .refresh {
+      width: 48px; height: 48px; cursor: pointer; font-size: 20px;
+      border: 1px solid var(--line); background: transparent;
+    }
+    .reason { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
+    .reason b {
+      padding: 5px 7px; border: 1px solid #d3d1c9;
+      background: #e8e7e1; font-size: 10px; font-weight: 600;
+    }
+    aside { padding: 30px 24px; background: rgba(255,254,250,.72); }
+    .aside-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+    .aside-head h2 { margin: 0; font-size: 15px; }
+    .aside-head span { color: var(--muted); font: 10px ui-monospace, monospace; }
+    .signals { display: grid; gap: 7px; }
+    .signal {
+      min-height: 44px; padding: 7px 9px; cursor: pointer;
+      display: grid; grid-template-columns: 20px 1fr; gap: 10px; align-items: center;
+      border: 1px solid transparent; background: transparent; text-align: left;
+      font-size: 12px; line-height: 1.3;
+    }
+    .signal:hover { border-color: var(--line); }
+    .signal.active { border-color: var(--line); background: var(--white); }
+    .box {
+      width: 20px; height: 20px; border: 1px solid #aaa9a2;
+      display: grid; place-items: center; font-size: 12px; font-weight: 900;
+    }
+    .active .box { color: white; background: var(--green); border-color: var(--green); }
+    .library { padding: 70px max(18px,4vw) 90px; color: white; background: var(--ink); }
+    .library-head {
+      max-width: 1320px; margin: 0 auto 32px;
+      display: flex; justify-content: space-between; align-items: end; gap: 24px;
+    }
+    .library-kicker { color: var(--yellow); }
+    .library h2 { margin: 6px 0 0; font-size: 32px; }
+    .search {
+      width: min(310px,100%); padding: 0 3px 8px;
+      display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #696c67;
+    }
+    .search input { width: 100%; min-width: 0; color: white; background: transparent; border: 0; outline: 0; }
+    .search input::placeholder { color: #979a95; }
+    .grid {
+      max-width: 1320px; margin: auto; display: grid; gap: 1px;
+      grid-template-columns: repeat(4,minmax(0,1fr));
+    }
+    .quest {
+      min-height: 225px; padding: 21px; position: relative;
+      display: flex; flex-direction: column; background: #242725;
+    }
+    .quest:hover { background: #2c2f2d; }
+    .meta { display: flex; justify-content: space-between; color: #a9aca7; font: 9px ui-monospace,monospace; text-transform: uppercase; }
+    .quest h3 { margin: 20px 38px 9px 0; font-size: 18px; line-height: 1.2; }
+    .quest p { margin: 0 32px 0 0; color: #b8bbb6; font-size: 12px; line-height: 1.5; }
+    .use {
+      width: 32px; height: 32px; position: absolute; right: 18px; bottom: 18px;
+      cursor: pointer; color: white; background: transparent; border: 1px solid #5f625e;
+      display: grid; place-items: center; text-decoration: none;
+    }
+    .use:hover { color: var(--ink); background: var(--yellow); border-color: var(--yellow); }
+    footer {
+      padding: 18px max(18px,4vw); display: flex; justify-content: space-between; gap: 16px;
+      background: var(--yellow); font-size: 12px; font-weight: 800;
+    }
+    footer a { color: inherit; }
+    [hidden] { display: none !important; }
+    @media (max-width: 980px) {
+      .controls { align-items: flex-start; flex-direction: column; }
+      .stage { border-bottom: 1px solid var(--line); }
+      .grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+    }
+    @media (max-width: 620px) {
+      .segments { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); width: 100%; }
+      .segments button { padding: 0 6px; }
+      .fields { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+      .fields label { align-items: stretch; flex-direction: column; }
+      .fields select { width: 100%; }
+      .stage { min-height: 510px; padding: 52px 18px; }
+      .intro { padding: 54px 18px 30px; }
+      .pack-links { padding: 0 18px 26px; flex-wrap: nowrap; overflow-x: auto; }
+      .pack-links a { flex: 0 0 auto; }
+      h1 { font-size: 46px; overflow-wrap: anywhere; }
+      .prompt { font-size: 16px; }
+      aside { padding: 26px 18px 34px; }
+      .library { padding: 56px 18px 70px; }
+      .library-head { align-items: flex-start; flex-direction: column; }
+      .library h2 { font-size: 28px; }
+      .grid { grid-template-columns: 1fr; }
+      .quest { min-height: 205px; }
+      footer { align-items: flex-start; flex-direction: column; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation: none !important; }
+      .model-cube { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <!--
+  MEANWHILE AGENT CONTRACT
+  Read JSON from #luna-data. Choose one option from the catalogue.
+  Send a resource URL directly when one exists. Otherwise send the prompt in chat.
+  Do not send the user to this index unless they ask to browse.
+  Do not track completion. Ask for a reply only when the work needs their answer.
+  -->
+  <header class="topbar">
+    <div class="brand"><span class="mark">M</span><span>MEANWHILE</span></div>
+    <a class="data-link" href="quests.json">FOR AGENTS: JSON ↗</a>
+  </header>
+
+  <section class="controls">
+    <div class="segments" id="states" aria-label="Current state"></div>
+    <div class="fields">
+      <label><span>Mode</span><select id="mode"></select></label>
+      <label><span>Time</span><select id="minutes"></select></label>
+      <label><span>Intent</span><select id="intent"></select></label>
+      <label><span>Pack</span><select id="pack"></select></label>
+    </div>
+  </section>
+
+  <main>
+    <section class="intro">
+      <h1>
+        Side quests while
+        <span class="model-switcher">
+          <span class="sr-only">your model</span>
+          <span class="model-cube" id="model-cube" aria-hidden="true">
+            <span class="model-face front"></span>
+            <span class="model-face bottom"></span>
+            <span class="model-face back"></span>
+            <span class="model-face top"></span>
+          </span>
+          <button id="next-model" aria-label="Show another model name" title="Show another model"></button>
+        </span>
+        works.
+      </h1>
+      <p>Your AI picks one useful check, relevant lesson, finite game, or small reset. The main work keeps moving.</p>
+    </section>
+    <nav class="pack-links" id="pack-links" aria-label="Quest packs"></nav>
+    <div class="workspace">
+      <section class="stage">
+        <div class="eyebrow">A good option right now</div>
+        <h1 id="title"></h1>
+        <p class="prompt" id="prompt"></p>
+        <div class="receipt"><span id="return-label">Back in chat</span><strong id="receipt"></strong></div>
+        <div class="actions">
+          <a class="action" id="resource" target="_blank" rel="noreferrer" hidden></a>
+          <a class="action secondary" id="share-card">Share card <span>↗</span></a>
+          <button class="refresh" id="refresh" aria-label="Another quest" title="Another quest">↻</button>
+        </div>
+        <div class="reason"><span>Why this one</span><div id="reasons" style="display:contents"></div></div>
+      </section>
+    </div>
+
+    <section class="library">
+      <div class="library-head">
+        <div><div class="library-kicker">THE INDEX</div><h2><span id="quest-count"></span> side quests</h2></div>
+        <label class="search"><span>⌕</span><input id="search" placeholder="Search by mood or task..." aria-label="Search quests"></label>
+      </div>
+      <div class="grid" id="grid"></div>
+    </section>
+  </main>
+
+  <footer>
+    <span>Side quests from your AI. No account, streak, or completion tracking.</span>
+    <a href="share/">Make a share card</a>
+  </footer>
+
+  <script type="application/json" id="luna-data">
+{
+  "name": "Meanwhile",
+  "version": "0.4.0",
+  "purpose": "Give a person one fitting side quest while their AI keeps working.",
+  "agent_contract": {
+    "trigger_when": [
+      "projected_micro_wait_over_45_seconds_after_opt_in",
+      "projected_journey_wait_over_5_minutes",
+      "user_previously_welcomed_suggestions",
+      "personal_taste_needed",
+      "reality_or_proof_needed",
+      "history_gap_found",
+      "user_frustrated",
+      "natural_waiting_window"
+    ],
+    "do_not_trigger_when": [
+      "user_is_answering",
+      "sensitive_action_in_progress",
+      "urgent_failure_needs_attention",
+      "active_debugging_in_progress",
+      "required_user_input_pending",
+      "quest_would_interrupt_flow",
+      "no_honest_time_estimate",
+      "already_offered_this_session",
+      "previous_message_contained_an_offer",
+      "implicit_offers_disabled_after_two_declines"
+    ],
+    "selection_order": [
+      "safety",
+      "current_blocker",
+      "recurring_user_miss",
+      "personal_judgment",
+      "learning_recovery_or_play",
+      "learn_user_last_and_only_after_opt_in"
+    ],
+    "rules": [
+      "Offer exactly one option.",
+      "Offer at most once per work session.",
+      "Never offer in two consecutive assistant messages.",
+      "After an ignored or declined offer, do not offer again that session.",
+      "After two declined or annoyed outcomes, disable implicit offers until explicit opt-in.",
+      "On decline, continue work silently without acknowledgement, defense, replacement, or retry.",
+      "Use micro only for an opted-in 45 to 120 second wait.",
+      "Use journey only for a projected wait of at least five minutes.",
+      "Prefer a quest shorter than the projected wait.",
+      "Use history only when it materially improves the choice.",
+      "Send the destination URL directly when a resource exists.",
+      "Send the invitation in chat when no resource exists.",
+      "Do not send the user to the Meanwhile index unless they ask to browse.",
+      "Ask for a reply only when it genuinely helps the work.",
+      "A screenshot, opinion, or file is not stronger proof than its actual evidence level.",
+      "Play and recovery need no productive disguise and no completion tracking.",
+      "Do not repeat a completed quest until the catalogue is exhausted."
+    ],
+    "outcome_record": {
+      "signal": "Infer only from the next user message after an offer.",
+      "shape": {
+        "quest_id": "string",
+        "situation": "string",
+        "outcome": "accepted | ignored | declined | annoyed",
+        "observed_at": "ISO-8601 timestamp"
+      }
+    },
+    "delivery": {
+      "resource_present": "Send resources[quest.resource].url directly.",
+      "resource_absent": "Send the quest prompt directly in the current chat.",
+      "index_page": "Use as a catalogue or optional human browsing page, not as an intermediate destination.",
+      "return_policy_by_kind": {
+        "play": "none",
+        "recover": "none",
+        "learn": "optional",
+        "learn-user": "reply_in_chat",
+        "proof": "reply_in_chat",
+        "reality": "reply_in_chat",
+        "decide": "reply_in_chat",
+        "test": "reply_in_chat",
+        "taste": "reply_in_chat",
+        "scope": "reply_in_chat",
+        "retrieve": "reply_in_chat",
+        "observe": "reply_in_chat",
+        "research": "reply_in_chat"
+      }
+    },
+    "output_template": [
+      "While I work, want something for {minutes} minutes?",
+      "{prompt}",
+      "{direct_resource_url_or_optional_reply_request}"
+    ],
+    "query_params": {
+      "mode": [
+        "micro",
+        "journey"
+      ],
+      "pack": "one curated pack ID",
+      "state": [
+        "busy",
+        "blocked",
+        "proof",
+        "taste",
+        "frustrated",
+        "learning"
+      ],
+      "minutes": [
+        1,
+        3,
+        5,
+        10,
+        20
+      ],
+      "intent": [
+        "any",
+        "useful",
+        "learn-user",
+        "learn",
+        "play"
+      ],
+      "signals": "comma-separated history signal IDs",
+      "context": "comma-separated freeform task tags",
+      "seed": "optional deterministic selection seed; otherwise rotates hourly",
+      "go": "when 1, the page redirects to the selected external resource if one exists"
+    }
+  },
+  "wait_modes": [
+    {
+      "id": "micro",
+      "label": "Quick quest",
+      "description": "A no-tab action that fits a 45 to 120 second wait.",
+      "minimum_wait_seconds": 45,
+      "maximum_quest_seconds": 120,
+      "requires_prior_opt_in": true
+    },
+    {
+      "id": "journey",
+      "label": "Small journey",
+      "description": "A game, learning trail, reset, or useful check for a wait of five minutes or more.",
+      "minimum_wait_seconds": 300,
+      "maximum_quest_seconds": 1200,
+      "requires_prior_opt_in": false
+    }
+  ],
+  "packs": [
+    {
+      "id": "touch-grass",
+      "title": "Touch Grass",
+      "description": "Leave the screen for a small physical reset.",
+      "quest_ids": [
+        "look-far",
+        "water-reset",
+        "one-color-walk",
+        "notice-three-sounds"
+      ]
+    },
+    {
+      "id": "learn-your-stack",
+      "title": "Learn Your Stack",
+      "description": "Understand the exact technology already on the screen.",
+      "quest_ids": [
+        "watch-debugging",
+        "android-measurement",
+        "oauth-flow-trace",
+        "compose-performance-spot",
+        "tiny-exercise"
+      ]
+    },
+    {
+      "id": "test-what-ai-built",
+      "title": "Test What AI Built",
+      "description": "Use human eyes and hands where source inspection is not enough.",
+      "quest_ids": [
+        "whole-click-path",
+        "five-click-smoke",
+        "capture-reality",
+        "claim-red-team",
+        "proof-ladder"
+      ]
+    },
+    {
+      "id": "founder-taste",
+      "title": "Founder Taste",
+      "description": "Make the product sharper with one clear judgment.",
+      "quest_ids": [
+        "three-second-verdict",
+        "remove-one",
+        "user-words",
+        "acceptance-line",
+        "taste-anchor"
+      ]
+    },
+    {
+      "id": "creative-reset",
+      "title": "Creative Reset",
+      "description": "Change medium long enough to loosen the next idea.",
+      "quest_ids": [
+        "draw-badly",
+        "make-tiny-song",
+        "six-word-story",
+        "wrong-hand-sketch",
+        "strange-internet-toy"
+      ]
+    },
+    {
+      "id": "debugging-brain",
+      "title": "Debugging Brain",
+      "description": "Interrupt a stale loop with a better question.",
+      "quest_ids": [
+        "first-error",
+        "count-retries",
+        "assumption-bounty",
+        "stop-condition",
+        "watch-debugging"
+      ]
+    },
+    {
+      "id": "surprise-me",
+      "title": "Surprise Me",
+      "description": "A balanced handful of useful, playful, and restorative defaults.",
+      "quest_ids": [
+        "three-second-verdict",
+        "chess-storm",
+        "look-far",
+        "useless-fact",
+        "first-error",
+        "draw-badly",
+        "explorable-rabbit-hole",
+        "notice-three-sounds"
+      ]
+    }
+  ],
+  "history_signals": [
+    {
+      "id": "proof-blur",
+      "label": "Keep proof levels honest",
+      "bias": [
+        "proof",
+        "reality"
+      ]
+    },
+    {
+      "id": "no-op-ui",
+      "label": "Make controls actually work",
+      "bias": [
+        "test",
+        "reality",
+        "taste"
+      ]
+    },
+    {
+      "id": "artifact-gap",
+      "label": "Validate files end to end",
+      "bias": [
+        "proof",
+        "retrieve"
+      ]
+    },
+    {
+      "id": "dirty-boundary",
+      "label": "Keep unrelated failures separate",
+      "bias": [
+        "proof",
+        "scope"
+      ]
+    },
+    {
+      "id": "retry-loop",
+      "label": "Stop when retries teach us nothing",
+      "bias": [
+        "observe",
+        "recover"
+      ]
+    },
+    {
+      "id": "vague-plan",
+      "label": "Make plans concrete",
+      "bias": [
+        "decide",
+        "proof"
+      ]
+    },
+    {
+      "id": "response-miss",
+      "label": "Match the response to the moment",
+      "bias": [
+        "learn-user",
+        "communication"
+      ]
+    },
+    {
+      "id": "friction-fatigue",
+      "label": "Notice when friction is building",
+      "bias": [
+        "recover",
+        "play",
+        "learn-user"
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "id": "debug-talks",
+      "label": "Julia Evans",
+      "url": "https://jvns.ca/"
+    },
+    {
+      "id": "design-critiques",
+      "label": "Laws of UX",
+      "url": "https://lawsofux.com/"
+    },
+    {
+      "id": "android-talks",
+      "label": "Android performance guide",
+      "url": "https://developer.android.com/topic/performance/measuring-performance"
+    },
+    {
+      "id": "lichess-storm",
+      "label": "Puzzle Storm",
+      "url": "https://lichess.org/storm"
+    },
+    {
+      "id": "quick-draw",
+      "label": "Quick, Draw!",
+      "url": "https://quickdraw.withgoogle.com/"
+    },
+    {
+      "id": "neal-fun",
+      "label": "Neal.fun",
+      "url": "https://neal.fun/"
+    },
+    {
+      "id": "radio-garden",
+      "label": "Radio Garden",
+      "url": "https://radio.garden/"
+    },
+    {
+      "id": "random-wikipedia",
+      "label": "random Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Special:Random"
+    },
+    {
+      "id": "exercism",
+      "label": "Exercism",
+      "url": "https://exercism.org/"
+    },
+    {
+      "id": "explorables",
+      "label": "Explorable Explanations",
+      "url": "https://explorabl.es/"
+    },
+    {
+      "id": "seeing-theory",
+      "label": "Seeing Theory",
+      "url": "https://seeing-theory.brown.edu/"
+    },
+    {
+      "id": "ciechanowski",
+      "label": "an interactive essay",
+      "url": "https://ciechanow.ski/"
+    },
+    {
+      "id": "human-benchmark",
+      "label": "Human Benchmark",
+      "url": "https://humanbenchmark.com/"
+    },
+    {
+      "id": "music-lab",
+      "label": "Chrome Music Lab",
+      "url": "https://musiclab.chromeexperiments.com/"
+    },
+    {
+      "id": "mit-ocw",
+      "label": "MIT OpenCourseWare",
+      "url": "https://ocw.mit.edu/"
+    },
+    {
+      "id": "oauth-playground",
+      "label": "OAuth 2.0 Playground",
+      "url": "https://www.oauth.com/playground/"
+    },
+    {
+      "id": "compose-performance",
+      "label": "Compose performance guide",
+      "url": "https://developer.android.com/develop/ui/compose/performance"
+    }
+  ],
+  "quests": [
+    {
+      "id": "response-density",
+      "title": "How much detail today?",
+      "kind": "learn-user",
+      "states": [
+        "busy",
+        "learning"
+      ],
+      "minutes": 1,
+      "intents": [
+        "learn-user"
+      ],
+      "signals": [
+        "response-miss"
+      ],
+      "contexts": [
+        "any"
+      ],
+      "prompt": "For your agent's next answer, what would feel right: one line, quick bullets, a short explanation, or the full reasoning?",
+      "receipt": "Your choice.",
+      "return_policy": "reply_in_chat",
+      "mode": "micro",
+      "duration_seconds": 60
+    },
+    {
+      "id": "autonomy-line",
+      "title": "What can your agent do without asking?",
+      "kind": "learn-user",
+      "states": [
+        "busy",
+        "blocked"
+      ],
+      "minutes": 1,
+      "intents": [
+        "learn-user"
+      ],
+      "signals": [
+        "response-miss"
+      ],
+      "contexts": [
+        "any"
+      ],
+      "prompt": "Name one thing your agent should simply handle, and one thing that should always wait for you.",
+      "receipt": "Handle it / ask me first.",
+      "return_policy": "reply_in_chat",
+      "mode": "micro",
+      "duration_seconds": 60
+    },
+    {
+      "id": "proof-appetite",
+      "title": "What counts as proven here?",
+      "kind": "learn-user",
+      "states": [
+        "proof",
+        "busy"
+      ],
+      "minutes": 1,
+      "intents": [
+        "learn-user"
+      ],
+      "signals": [
+        "proof-blur"
+      ],
+      "contexts": [
+        "any"
+      ],
+      "prompt": "What is enough for this task: reading the source, a local run, the real browser, a device, a live service, or seeing it yourself?",
+      "receipt": "The level that is enough.",
+      "return_policy": "reply_in_chat",
+      "mode": "micro",
+      "duration_seconds": 60
+    },
+    {
+      "id": "taste-anchor",
+      "title": "Show your agent your taste",
+      "kind": "learn-user",
+      "states": [
+        "taste",
+        "busy"
+      ],
+      "minutes": 3,
+      "intents": [
+        "learn-user"
+      ],
+      "signals": [],
+      "contexts": [
+        "ui",
+        "product"
+      ],
+      "prompt": "Find one app, page, or object that feels right for this work. What single quality should your agent borrow?",
+      "receipt": "One example and one quality.",
+      "return_policy": "reply_in_chat",
+      "mode": "journey",
+      "duration_seconds": 180
+    },
+    {
+      "id": "taste-rejection",
+      "title": "Show your agent what to avoid",
+      "kind": "learn-user",
+      "states": [
+        "taste",
+        "busy"
+      ],
+      "minutes": 3,
+      "intents": [
+        "learn-user"
+      ],
+      "signals": [],
+      "contexts": [
+        "ui",
+        "product"
+      ],
+      "prompt": "Find one relevant example that feels wrong. What exactly makes it wrong for you?",
+      "receipt": "One example and one reason.",
+      "return_policy": "reply_in_chat",
+      "mode": "journey",
+      "duration_seconds": 180
+    },
+    {
+      "id": "frustration-translate",
+      "title": "What is actually getting annoying?",
+      "kind": "learn-user",
+      "states": [
+        "frustrated",
+        "blocked"
+      ],
+      "minutes": 1,
+      "intents": [
+        "learn-user",
+        "useful"
+      ],
+      "signals": [
+        "friction-fatigue",
+        "response-miss"
+      ],
+      "contexts": [
+        "any"
+      ],
+      "prompt": "Finish this honestly: the part that keeps wearing me down is…",
+      "receipt": "One sentence.",
+      "return_policy": "reply_in_chat",
+      "mode": "micro",
+      "duration_seconds": 60
+    },
+    {
+      "id": "task-shape",
+      "title": "What kind of work is this?",
+      "kind": "learn-user",
+      "states": [
+        "busy",
+        "blocked"
+      ],
+      "minutes": 1,
+      "intents": [
+        "learn-user"
+      ],
+      "signals": [
+        "vague-plan"
+      ],
+      "contexts": [
+        "any"
+      ],
+      "prompt": "Is today’s job to explore, choose, build, debug, check, polish, or ship?",
+      "receipt": "The closest word.",
+      "return_policy": "reply_in_chat",
+      "mode": "micro",
+      "duration_seconds": 60
+    },
+    {
+      "id": "interruption-rule",
+      "title": "When should your agent interrupt?",
+      "kind": "learn-user",
+      "states": [
+        "busy"
+      ],
+      "minutes": 1,
+      "intents": [
+        "learn-user"
+      ],
+      "signals": [
+        "response-miss"
+      ],
+      "contexts": [
+        "any"
+      ],
+      "prompt": "Only for blockers, for decisions that matter, or whenever something interesting comes up?",
+      "receipt": "Your rule.",
+      "return_policy": "reply_in_chat",
+      "mode": "micro",
+      "duration_seconds": 60
+    },
+    {
+      "id": "learning-mode",
+      "title": "How do you want to learn this?",
+      "kind": "learn-user",
+      "states": [
+        "learning",
+        "busy"
+      ],
+      "minutes": 1,
+      "intents": [
+        "learn-user",
+        "learn"
+      ],
+      "signals": [],
+      "contexts": [
+        "any"
+      ],
+      "prompt": "Would you rather see an example, get the mental model, try it first, be quizzed, or ask only when stuck?",
+      "receipt": "Your preferred way.",
+      "return_policy": "reply_in_chat",
+      "mode": "micro",
+      "duration_seconds": 60
+    },
+    {
+      "id": "memory-correction",
+      "title": "Fix one assumption your agent made",
+      "kind": "learn-user",
+      "states": [
+        "busy",
+        "learning"
+      ],
+      "minutes": 3,
+      "intents": [
+        "learn-user"
+      ],
+      "signals": [
+        "response-miss"
+      ],
+      "contexts": [
+        "any"
+      ],
+      "prompt": "Pick one thing your agent seems to believe about you. Is it right, partly right, or wrong?",
+      "receipt": "The assumption and the correction.",
+      "return_policy": "reply_in_chat",
+      "mode": "journey",
+      "duration_seconds": 180
+    },
+    {
+      "id": "fun-calibration",
+      "title": "What sounds fun right now?",
+      "kind": "learn-user",
+      "states": [
+        "busy",
+        "frustrated"
+      ],
+      "minutes": 1,
+      "intents": [
+        "learn-user",
+        "play"
+      ],
+      "signals": [
+        "friction-fatigue"
+      ],
+      "contexts": [
+        "play"
+      ],
+      "prompt": "A puzzle, a strange website, a short video, movement, music, making something tiny, or a surprise?",
+      "receipt": "Whatever sounds good.",
+      "return_policy": "reply_in_chat",
+      "mode": "micro",
+      "duration_seconds": 60
+    },
+    {
+      "id": "proof-ladder",
+      "title": "What do we actually know?",
+      "kind": "proof",
+      "states": [
+        "proof",
+        "blocked"
+      ],
+      "minutes": 1,
+      "intents": [
+        "useful"
+      ],
+      "signals": [
+        "proof-blur"
+      ],
+      "contexts": [
+        "release",
+        "android",
+        "browser",
+        "code"
+      ],
+      "prompt": "What has truly happened so far: source checked, run locally, tried in a browser, tried on a device, tried live, released, or seen by you?",
+      "receipt": "What is proven, and what is still missing.",
+      "return_policy": "reply_in_chat",
+      "mode": "micro",
+      "duration_seconds": 60
+    },
+    {
+      "id": "claim-red-team",
+      "title": "Try to break the claim",
+      "kind": "proof",
+      "states": [
+        "proof",
+        "busy"
+      ],
+      "minutes": 3,
+      "intents": [
+        "useful"
+      ],
+      "signals": [
+        "proof-blur",
+        "dirty-boundary"
+      ],
+      "contexts": [
+        "release",
+        "code",
+        "research"
+      ],
+      "prompt": "How could the latest “it works” statement be technically true while the experience is still broken?",
+      "receipt": "One believable counterexample.",
+      "return_policy": "reply_in_chat",
+      "mode": "journey",
+      "duration_seconds": 180
+    },
+    {
+      "id": "capture-reality",
+      "title": "See what really happens",
+      "kind": "reality",
+      "states": [
+        "proof",
+        "busy"
+      ],
+      "minutes": 3,
+      "intents": [
+        "useful"
+      ],
+      "signals": [
+        "no-op-ui"
+      ],
+      "contexts": [
+        "ui",
+        "android",
+        "product"
+      ],
+      "prompt": "Try the real action once, without reading the code. What do you actually see?",
+      "receipt": "A screenshot or the exact result.",
+      "return_policy": "reply_in_chat",
+      "mode": "journey",
+      "duration_seconds": 180
+    },
+    {
+      "id": "artifact-chain",
+      "title": "Follow the file all the way through",
+      "kind": "proof",
+      "states": [
+        "proof",
+        "blocked"
+      ],
+      "minutes": 5,
+      "intents": [
+        "useful"
+      ],
+      "signals": [
+        "artifact-gap"
+      ],
+      "contexts": [
+        "release",
+        "browser",
+        "research"
+      ],
+      "prompt": "Start where the file came from. Can you follow it through download, integrity, structure, and final acceptance?",
+      "receipt": "The first broken or missing link.",
+      "return_policy": "reply_in_chat",
+      "mode": "journey",
+      "duration_seconds": 300
+    },
+    {
+      "id": "stop-condition",
+      "title": "When should your agent stop?",
+      "kind": "decide",
+      "states": [
+        "blocked",
+        "busy"
+      ],
+      "minutes": 1,
+      "intents": [
+        "useful"
+      ],
+      "signals": [
+        "retry-loop",
+        "vague-plan"
+      ],
+      "contexts": [
+        "browser",
+        "research",
+        "code"
+      ],
+      "prompt": "What should make your agent stop, wait, try later, or come back to you?",
+      "receipt": "One clear if/then rule.",
+      "return_policy": "reply_in_chat",
+      "mode": "micro",
+      "duration_seconds": 60
+    },
+    {
+      "id": "whole-click-path",
+      "title": "Try it like a real person",
+      "kind": "test",
+      "states": [
+        "proof",
+        "busy"
+      ],
+      "minutes": 5,
+      "intents": [
+        "useful"
+      ],
+      "signals": [
+        "no-op-ui"
+      ],
+      "contexts": [
+        "ui",
+        "product"
+      ],
+      "prompt": "Use the control, look for the change, leave the screen, come back, and see whether it held.",
+      "receipt": "The first moment that feels wrong.",
+      "return_policy": "reply_in_chat",
+      "mode": "journey",
+      "duration_seconds": 300
+    },
+    {
+      "id": "five-click-smoke",
+      "title": "Click the obvious things",
+      "kind": "test",
+      "states": [
+        "busy",
+        "proof"
+      ],
+      "minutes": 3,
+      "intents": [
+        "useful"
+      ],
+      "signals": [
+        "no-op-ui"
+      ],
+      "contexts": [
+        "ui",
+        "product"
+      ],
+      "prompt": "Ignore the code. Try the five things a new person would click first.",
+      "receipt": "What worked, and the first surprise.",
+      "return_policy": "reply_in_chat",
+      "mode": "journey",
+      "duration_seconds": 180
+    },
+    {
+      "id": "three-second-verdict",
+      "title": "First impression, no overthinking",
+      "kind": "taste",
+      "states": [
+        "taste",
+        "busy"
+      ],
+      "minutes": 1,
+      "intents": [
+        "useful"
+      ],
+      "signals": [],
+      "contexts": [
+        "ui",
+        "product"
+      ],
+      "prompt": "Look for three seconds. What does it feel like, who is it for, and what grabs you first?",
+      "receipt": "Three quick phrases.",
+      "return_policy": "reply_in_chat",
+      "mode": "micro",
+      "duration_seconds": 60
+    },
+    {
+      "id": "remove-one",
+      "title": "What would you remove?",
+      "kind": "taste",
+      "states": [
+        "taste",
+        "busy"
+      ],
+      "minutes": 1,
+      "intents": [
+        "useful"
+      ],
+      "signals": [],
+      "contexts": [
+        "ui",
+        "docs",
+        "product"
+      ],
+      "prompt": "What single thing could disappear and make this calmer or clearer?",
+      "receipt": "The thing and why.",
+      "return_policy": "reply_in_chat",
+      "mode": "micro",
+      "duration_seconds": 60
+    },
+    {
+      "id": "acceptance-line",
+      "title": "What would make this done?",
+      "kind": "decide",
+      "states": [
+        "blocked",
+        "busy"
+      ],
+      "minutes": 1,
+      "intents": [
+        "useful"
+      ],
+      "signals": [
+        "vague-plan"
+      ],
+      "contexts": [
+        "code",
+        "product",
+        "release"
+      ],
+      "prompt": "Describe one thing anyone could see or try and agree means this is finished.",
+      "receipt": "One plain sentence.",
+      "return_policy": "reply_in_chat",
+      "mode": "micro",
+      "duration_seconds": 60
+    },
+    {
+      "id": "forbidden-change",
+      "title": "What must stay untouched?",
+      "kind": "scope",
+      "states": [
+        "busy",
+        "blocked"
+      ],
+      "minutes": 1,
+      "intents": [
+        "useful"
+      ],
+      "signals": [
+        "dirty-boundary"
+      ],
+      "contexts": [
+        "code",
+        "release"
+      ],
+      "prompt": "What nearby file, behavior, or system should this work leave completely alone?",
+      "receipt": "One boundary.",
+      "return_policy": "reply_in_chat",
+      "mode": "micro",
+      "duration_seconds": 60
+    },
+    {
+      "id": "fetch-missing",
+      "title": "Find the one missing thing",
+      "kind": "retrieve",
+      "states": [
+        "blocked"
+      ],
+      "minutes": 3,
+      "intents": [
+        "useful"
+      ],
+      "signals": [
+        "artifact-gap"
+      ],
+      "contexts": [
+        "code",
+        "research",
+        "browser"
+      ],
+      "prompt": "What smallest log, screenshot, sample, setting, or export would let your agent keep moving?",
+      "receipt": "The thing itself, or where to find it.",
+      "return_policy": "reply_in_chat",
+      "mode": "journey",
+      "duration_seconds": 180
+    },
+    {
+      "id": "first-error",
+      "title": "Start with the first real error",
+      "kind": "observe",
+      "states": [
+        "blocked",
+        "frustrated"
+      ],
+      "minutes": 3,
+      "intents": [
+        "useful"
+      ],
+      "signals": [
+        "dirty-boundary",
+        "friction-fatigue"
+      ],
+      "contexts": [
+        "code",
+        "browser",
+        "android"
+      ],
+      "prompt": "Ignore everything that followed. What failed first, what happened just before it, and does this work own it?",
+      "receipt": "The first error and its context.",
+      "return_policy": "reply_in_chat",
+      "mode": "journey",
+      "duration_seconds": 180
+    },
+    {
+      "id": "count-retries",
+      "title": "Are we learning or just retrying?",
+      "kind": "observe",
+      "states": [
+        "blocked",
+        "frustrated"
+      ],
+      "minutes": 1,
+      "intents": [
+        "useful"
+      ],
+      "signals": [
+        "retry-loop"
+      ],
+      "contexts": [
+        "browser",
+        "research",
+        "code"
+      ],
+      "prompt": "How many times has the same thing failed? Did the latest try teach us anything new?",
+      "receipt": "The count and yes/no.",
+      "return_policy": "reply_in_chat",
+      "mode": "micro",
+      "duration_seconds": 60
+    },
+    {
+      "id": "assumption-bounty",
+      "title": "What are we assuming?",
+      "kind": "research",
+      "states": [
+        "blocked",
+        "proof"
+      ],
+      "minutes": 5,
+      "intents": [
+        "useful"
+      ],
+      "signals": [
+        "proof-blur",
+        "vague-plan"
+      ],
+      "contexts": [
+        "code",
+        "research",
+        "product"
+      ],
+      "prompt": "Find one thing everyone is treating as true without having checked it.",
+      "receipt": "The assumption and the easiest check.",
+      "return_policy": "reply_in_chat",
+      "mode": "journey",
+      "duration_seconds": 300
+    },
+    {
+      "id": "user-words",
+      "title": "Find how people actually say it",
+      "kind": "research",
+      "states": [
+        "busy",
+        "taste"
+      ],
+      "minutes": 5,
+      "intents": [
+        "useful"
+      ],
+      "signals": [],
+      "contexts": [
+        "product",
+        "docs",
+        "research"
+      ],
+      "prompt": "Find one real complaint, request, review, or support message about this problem.",
+      "receipt": "A short phrase and where it came from.",
+      "return_policy": "reply_in_chat",
+      "mode": "journey",
+      "duration_seconds": 300
+    },
+    {
+      "id": "watch-debugging",
+      "title": "Steal one debugging idea",
+      "kind": "learn",
+      "states": [
+        "busy",
+        "learning"
+      ],
+      "minutes": 10,
+      "intents": [
+        "learn"
+      ],
+      "signals": [
+        "friction-fatigue"
+      ],
+      "contexts": [
+        "code"
+      ],
+      "prompt": "Watch until you hear one technique worth trying. You do not need to finish the video.",
+      "receipt": "The idea in one sentence.",
+      "resource": "debug-talks",
+      "return_policy": "optional",
+      "mode": "journey",
+      "duration_seconds": 600
+    },
+    {
+      "id": "watch-design",
+      "title": "Steal one design question",
+      "kind": "learn",
+      "states": [
+        "busy",
+        "taste",
+        "learning"
+      ],
+      "minutes": 10,
+      "intents": [
+        "learn"
+      ],
+      "signals": [],
+      "contexts": [
+        "ui",
+        "product"
+      ],
+      "prompt": "Watch a critique until one good question appears. Ask that question about the current screen.",
+      "receipt": "The question and your answer.",
+      "resource": "design-critiques",
+      "return_policy": "optional",
+      "mode": "journey",
+      "duration_seconds": 600
+    },
+    {
+      "id": "android-measurement",
+      "title": "Learn what one Android metric means",
+      "kind": "learn",
+      "states": [
+        "busy",
+        "learning"
+      ],
+      "minutes": 10,
+      "intents": [
+        "learn"
+      ],
+      "signals": [
+        "proof-blur"
+      ],
+      "contexts": [
+        "android"
+      ],
+      "prompt": "Pick one Android performance technique. What does it truly measure, and what does it not prove?",
+      "receipt": "The metric and its limit.",
+      "resource": "android-talks",
+      "return_policy": "optional",
+      "mode": "journey",
+      "duration_seconds": 600
+    },
+    {
+      "id": "tiny-exercise",
+      "title": "Finish something small",
+      "kind": "learn",
+      "states": [
+        "busy",
+        "learning"
+      ],
+      "minutes": 20,
+      "intents": [
+        "learn"
+      ],
+      "signals": [
+        "friction-fatigue"
+      ],
+      "contexts": [
+        "code"
+      ],
+      "prompt": "Choose an exercise that feels almost too easy. Finish it and notice one neat language idiom.",
+      "receipt": "The idiom you noticed.",
+      "resource": "exercism",
+      "return_policy": "optional",
+      "mode": "journey",
+      "duration_seconds": 1200
+    },
+    {
+      "id": "chess-storm",
+      "title": "Three minutes of chess",
+      "kind": "play",
+      "states": [
+        "busy",
+        "frustrated"
+      ],
+      "minutes": 3,
+      "intents": [
+        "play"
+      ],
+      "signals": [
+        "friction-fatigue"
+      ],
+      "contexts": [
+        "play"
+      ],
+      "prompt": "Play one Puzzle Storm. When the run ends, so does the quest.",
+      "receipt": "Your score, if you feel like sharing.",
+      "resource": "lichess-storm",
+      "return_policy": "none",
+      "mode": "journey",
+      "duration_seconds": 180
+    },
+    {
+      "id": "draw-badly",
+      "title": "Draw badly, quickly",
+      "kind": "play",
+      "states": [
+        "busy",
+        "frustrated"
+      ],
+      "minutes": 3,
+      "intents": [
+        "play"
+      ],
+      "signals": [
+        "friction-fatigue"
+      ],
+      "contexts": [
+        "play",
+        "ui"
+      ],
+      "prompt": "Play one Quick, Draw! round. Speed matters; quality does not.",
+      "receipt": "Nothing. Just come back when you are ready.",
+      "resource": "quick-draw",
+      "return_policy": "none",
+      "mode": "journey",
+      "duration_seconds": 180
+    },
+    {
+      "id": "strange-internet-toy",
+      "title": "Wander into something weird",
+      "kind": "play",
+      "states": [
+        "busy",
+        "frustrated"
+      ],
+      "minutes": 5,
+      "intents": [
+        "play"
+      ],
+      "signals": [
+        "friction-fatigue"
+      ],
+      "contexts": [
+        "play"
+      ],
+      "prompt": "Open a Neal.fun experiment you have never tried. Give it five minutes, no more.",
+      "receipt": "A one-word review, if you have one.",
+      "resource": "neal-fun",
+      "return_policy": "none",
+      "mode": "journey",
+      "duration_seconds": 300
+    },
+    {
+      "id": "radio-teleport",
+      "title": "Listen somewhere else",
+      "kind": "play",
+      "states": [
+        "busy",
+        "frustrated"
+      ],
+      "minutes": 5,
+      "intents": [
+        "play"
+      ],
+      "signals": [
+        "friction-fatigue"
+      ],
+      "contexts": [
+        "play"
+      ],
+      "prompt": "Drop into a city you have never visited and listen for a while. No extra tabs.",
+      "receipt": "The city and how it felt.",
+      "resource": "radio-garden",
+      "return_policy": "none",
+      "mode": "journey",
+      "duration_seconds": 300
+    },
+    {
+      "id": "useless-fact",
+      "title": "Find one delightful fact",
+      "kind": "play",
+      "states": [
+        "busy",
+        "learning"
+      ],
+      "minutes": 3,
+      "intents": [
+        "play",
+        "learn"
+      ],
+      "signals": [
+        "friction-fatigue"
+      ],
+      "contexts": [
+        "play",
+        "research"
+      ],
+      "prompt": "Open one random article. Leave with a single fact and do not follow the link trail.",
+      "receipt": "The fact.",
+      "resource": "random-wikipedia",
+      "return_policy": "none",
+      "mode": "journey",
+      "duration_seconds": 180
+    },
+    {
+      "id": "look-far",
+      "title": "Give your eyes a minute",
+      "kind": "recover",
+      "states": [
+        "busy",
+        "frustrated"
+      ],
+      "minutes": 1,
+      "intents": [
+        "play"
+      ],
+      "signals": [
+        "friction-fatigue"
+      ],
+      "contexts": [
+        "recover"
+      ],
+      "prompt": "Stand up, look at the farthest thing you can see, and take six unhurried breaths.",
+      "receipt": "Nothing. Just come back when you are ready.",
+      "return_policy": "none",
+      "mode": "micro",
+      "duration_seconds": 60
+    },
+    {
+      "id": "water-reset",
+      "title": "Get water without the screen",
+      "kind": "recover",
+      "states": [
+        "busy",
+        "frustrated"
+      ],
+      "minutes": 3,
+      "intents": [
+        "play"
+      ],
+      "signals": [
+        "friction-fatigue"
+      ],
+      "contexts": [
+        "recover"
+      ],
+      "prompt": "Leave the screen here. Get water, drink it, then return.",
+      "receipt": "Nothing. Just come back when you are ready.",
+      "return_policy": "none",
+      "mode": "journey",
+      "duration_seconds": 180
+    },
+    {
+      "id": "smallest-win",
+      "title": "What would count as a tiny win?",
+      "kind": "recover",
+      "states": [
+        "frustrated",
+        "blocked"
+      ],
+      "minutes": 1,
+      "intents": [
+        "useful"
+      ],
+      "signals": [
+        "friction-fatigue",
+        "vague-plan"
+      ],
+      "contexts": [
+        "any"
+      ],
+      "prompt": "Even if the main task stays stuck, what would make the next five minutes worthwhile?",
+      "receipt": "One small outcome.",
+      "return_policy": "none",
+      "mode": "micro",
+      "duration_seconds": 60
+    },
+    {
+      "id": "handoff-packet",
+      "title": "Leave your agent a clean note",
+      "kind": "decide",
+      "states": [
+        "busy",
+        "blocked"
+      ],
+      "minutes": 5,
+      "intents": [
+        "useful"
+      ],
+      "signals": [
+        "vague-plan",
+        "dirty-boundary"
+      ],
+      "contexts": [
+        "code",
+        "product",
+        "research"
+      ],
+      "prompt": "Write what is true now, what your agent owns, what comes next, what counts as done, when to stop, and what remains unproven.",
+      "receipt": "Six short lines.",
+      "return_policy": "reply_in_chat",
+      "mode": "journey",
+      "duration_seconds": 300
+    },
+    {
+      "id": "explorable-rabbit-hole",
+      "title": "Play with an idea",
+      "kind": "learn",
+      "states": [
+        "busy",
+        "learning"
+      ],
+      "minutes": 5,
+      "intents": [
+        "learn",
+        "play"
+      ],
+      "signals": [],
+      "contexts": [
+        "play",
+        "learning"
+      ],
+      "prompt": "Open one interactive explanation that catches your eye. Touch the controls before reading everything.",
+      "receipt": "Anything that surprised you.",
+      "resource": "explorables",
+      "return_policy": "optional",
+      "mode": "journey",
+      "duration_seconds": 300
+    },
+    {
+      "id": "probability-picture",
+      "title": "See probability move",
+      "kind": "learn",
+      "states": [
+        "busy",
+        "learning"
+      ],
+      "minutes": 10,
+      "intents": [
+        "learn"
+      ],
+      "signals": [],
+      "contexts": [
+        "math",
+        "learning"
+      ],
+      "prompt": "Pick one probability idea and learn it through the visualization, not the formula first.",
+      "receipt": "The picture that made it click.",
+      "resource": "seeing-theory",
+      "return_policy": "optional",
+      "mode": "journey",
+      "duration_seconds": 600
+    },
+    {
+      "id": "interactive-essay",
+      "title": "Open a beautiful explanation",
+      "kind": "learn",
+      "states": [
+        "busy",
+        "learning"
+      ],
+      "minutes": 10,
+      "intents": [
+        "learn"
+      ],
+      "signals": [],
+      "contexts": [
+        "science",
+        "design",
+        "learning"
+      ],
+      "prompt": "Choose one interactive essay. Read only until one mechanism becomes clearer.",
+      "receipt": "The mechanism in your own words.",
+      "resource": "ciechanowski",
+      "return_policy": "optional",
+      "mode": "journey",
+      "duration_seconds": 600
+    },
+    {
+      "id": "reaction-time",
+      "title": "Test your reaction time",
+      "kind": "play",
+      "states": [
+        "busy",
+        "frustrated"
+      ],
+      "minutes": 3,
+      "intents": [
+        "play"
+      ],
+      "signals": [
+        "friction-fatigue"
+      ],
+      "contexts": [
+        "play"
+      ],
+      "prompt": "Try the reaction-time test three times. No practice marathon.",
+      "receipt": "Nothing. The score is yours.",
+      "resource": "human-benchmark",
+      "return_policy": "none",
+      "mode": "journey",
+      "duration_seconds": 180
+    },
+    {
+      "id": "make-tiny-song",
+      "title": "Make eight bars of noise",
+      "kind": "play",
+      "states": [
+        "busy",
+        "frustrated"
+      ],
+      "minutes": 5,
+      "intents": [
+        "play"
+      ],
+      "signals": [
+        "friction-fatigue"
+      ],
+      "contexts": [
+        "play",
+        "music",
+        "create"
+      ],
+      "prompt": "Open Song Maker and make something tiny. It does not need to sound good.",
+      "receipt": "Nothing, unless you want to share the song.",
+      "resource": "music-lab",
+      "return_policy": "none",
+      "mode": "journey",
+      "duration_seconds": 300
+    },
+    {
+      "id": "course-window-shopping",
+      "title": "Window-shop a subject",
+      "kind": "learn",
+      "states": [
+        "busy",
+        "learning"
+      ],
+      "minutes": 10,
+      "intents": [
+        "learn"
+      ],
+      "signals": [],
+      "contexts": [
+        "learning"
+      ],
+      "prompt": "Choose a subject you know almost nothing about. Skim one syllabus and save one lecture for later.",
+      "receipt": "The subject you chose.",
+      "resource": "mit-ocw",
+      "return_policy": "optional",
+      "mode": "journey",
+      "duration_seconds": 600
+    },
+    {
+      "id": "six-word-story",
+      "title": "Write a six-word story",
+      "kind": "play",
+      "states": [
+        "busy",
+        "frustrated"
+      ],
+      "minutes": 3,
+      "intents": [
+        "play"
+      ],
+      "signals": [
+        "friction-fatigue"
+      ],
+      "contexts": [
+        "play",
+        "create"
+      ],
+      "prompt": "Write a complete story in exactly six words. Do not explain it.",
+      "receipt": "Nothing, unless you want your agent to read it.",
+      "return_policy": "none",
+      "mode": "journey",
+      "duration_seconds": 180
+    },
+    {
+      "id": "one-color-walk",
+      "title": "Find one color five times",
+      "kind": "recover",
+      "states": [
+        "busy",
+        "frustrated"
+      ],
+      "minutes": 5,
+      "intents": [
+        "play"
+      ],
+      "signals": [
+        "friction-fatigue"
+      ],
+      "contexts": [
+        "recover",
+        "walk"
+      ],
+      "prompt": "Pick a color, walk for five minutes, and notice five different versions of it.",
+      "receipt": "Nothing. Keep the walk.",
+      "return_policy": "none",
+      "mode": "journey",
+      "duration_seconds": 300
+    },
+    {
+      "id": "wrong-hand-sketch",
+      "title": "Draw the room with the wrong hand",
+      "kind": "play",
+      "states": [
+        "busy",
+        "frustrated"
+      ],
+      "minutes": 3,
+      "intents": [
+        "play"
+      ],
+      "signals": [
+        "friction-fatigue"
+      ],
+      "contexts": [
+        "play",
+        "create"
+      ],
+      "prompt": "Use your non-dominant hand. Draw the room without lifting the pen.",
+      "receipt": "Nothing. Bad is the point.",
+      "return_policy": "none",
+      "mode": "journey",
+      "duration_seconds": 180
+    },
+    {
+      "id": "notice-three-sounds",
+      "title": "Find three layers of sound",
+      "kind": "recover",
+      "states": [
+        "busy",
+        "frustrated"
+      ],
+      "minutes": 1,
+      "intents": [
+        "play"
+      ],
+      "signals": [
+        "friction-fatigue"
+      ],
+      "contexts": [
+        "recover"
+      ],
+      "prompt": "Close your eyes. Find the nearest sound, the farthest sound, and one sound you had stopped noticing.",
+      "receipt": "Nothing. Just listen.",
+      "return_policy": "none",
+      "mode": "micro",
+      "duration_seconds": 60
+    },
+    {
+      "id": "oauth-flow-trace",
+      "title": "Trace one OAuth exchange",
+      "kind": "learn",
+      "states": [
+        "busy",
+        "learning"
+      ],
+      "minutes": 10,
+      "intents": [
+        "learn"
+      ],
+      "signals": [],
+      "contexts": [
+        "oauth",
+        "auth",
+        "security",
+        "web"
+      ],
+      "prompt": "Step through one authorization-code flow. Name what the authorization code protects that an access token does not.",
+      "receipt": "The distinction in your own words.",
+      "resource": "oauth-playground",
+      "return_policy": "optional",
+      "mode": "journey",
+      "duration_seconds": 600
+    },
+    {
+      "id": "compose-performance-spot",
+      "title": "Spot one Compose performance trap",
+      "kind": "learn",
+      "states": [
+        "busy",
+        "learning"
+      ],
+      "minutes": 10,
+      "intents": [
+        "learn"
+      ],
+      "signals": [
+        "no-op-ui"
+      ],
+      "contexts": [
+        "android",
+        "compose",
+        "ui",
+        "performance"
+      ],
+      "prompt": "Read one performance mistake from the Compose guide, then look for that exact pattern in the code currently being changed.",
+      "receipt": "The pattern you checked and whether it exists.",
+      "resource": "compose-performance",
+      "return_policy": "optional",
+      "mode": "journey",
+      "duration_seconds": 600
+    }
+  ]
+}
+  </script>
+
+  <script>
+    (() => {
+      const data = JSON.parse(document.getElementById("luna-data").textContent);
+      const $ = (id) => document.getElementById(id);
+      const states = [
+        ["busy","I’m bored"], ["blocked","I can unblock you"], ["proof","Check reality"],
+        ["taste","Want my take?"], ["frustrated","I need a reset"], ["learning","I’m curious"]
+      ];
+      const intentLabels = {
+        any: "Surprise me", useful: "Help the work", "learn-user": "Know me better", learn: "Learn", play: "Just for fun"
+      };
+      const modeLabels = { micro: "Quick quest", journey: "Small journey" };
+      const kindLabels = {
+        "learn-user": "know you", proof: "check", reality: "try it", decide: "choose",
+        test: "test", taste: "your take", scope: "protect", retrieve: "find",
+        observe: "notice", research: "look around", learn: "learn", play: "play", recover: "reset"
+      };
+      const params = new URLSearchParams(location.search);
+      const modelNames = (params.get("models") || "Luna|Codex|Claude|Gemini|GPT-5|Llama|Mistral|Qwen")
+        .split(/[|,]/)
+        .map(name => name.trim())
+        .filter(Boolean);
+      const modelFaces = [...document.querySelectorAll(".model-face")];
+      let modelTurn = 0;
+      let modelNameIndex = 0;
+      let modelTimer;
+      let automaticTurns = 0;
+      const motionPreference = matchMedia("(prefers-reduced-motion: reduce)");
+      modelFaces.forEach((face, index) => {
+        face.textContent = modelNames[index % modelNames.length];
+      });
+      function nextModel() {
+        const nextTurn = modelTurn + 1;
+        const incomingFace = nextTurn % modelFaces.length;
+        modelNameIndex = (modelNameIndex + 1) % modelNames.length;
+        modelFaces[incomingFace].textContent = modelNames[modelNameIndex];
+        modelTurn = nextTurn;
+        $("model-cube").style.transform = `rotateX(${modelTurn * 90}deg)`;
+      }
+      $("next-model").onclick = nextModel;
+      function stopModelRotation() {
+        clearInterval(modelTimer);
+        modelTimer = undefined;
+      }
+      function startModelRotation() {
+        if (motionPreference.matches || modelNames.length < 2 || automaticTurns >= 6 || modelTimer) return;
+        modelTimer = setInterval(() => {
+          if (document.hidden) return;
+          nextModel();
+          automaticTurns += 1;
+          if (automaticTurns >= 6) stopModelRotation();
+        }, 2400);
+      }
+      motionPreference.addEventListener("change", event => {
+        if (event.matches) stopModelRotation();
+        else startModelRotation();
+      });
+      startModelRotation();
+      const saved = JSON.parse(localStorage.getItem("meanwhile") || "{}");
+      const requestedMinutes = +(params.get("minutes") || saved.minutes || 5);
+      const model = {
+        state: params.get("state") || saved.state || "busy",
+        mode: params.get("mode") || saved.mode || (requestedMinutes === 1 ? "micro" : "journey"),
+        minutes: requestedMinutes,
+        intent: params.get("intent") || saved.intent || "any",
+        pack: params.get("pack") || saved.pack || "any",
+        quest: params.get("quest") || "",
+        signals: (params.get("signals") || saved.signals || data.history_signals.map(x => x.id).join(",")).split(",").filter(Boolean),
+        context: (params.get("context") || "").split(",").filter(Boolean),
+        rotation: 0
+      };
+      const requestedQuest = data.quests.find(quest => quest.id === model.quest);
+      if (requestedQuest) {
+        model.mode = requestedQuest.mode;
+        model.minutes = requestedQuest.minutes;
+      }
+      if (!data.wait_modes.some(mode => mode.id === model.mode)) model.mode = "journey";
+      const resourceMap = Object.fromEntries(data.resources.map(x => [x.id, x]));
+      const hash = (text) => {
+        let h = 2166136261;
+        for (let i = 0; i < text.length; i++) { h ^= text.charCodeAt(i); h = Math.imul(h, 16777619); }
+        return Math.abs(h);
+      };
+      const save = () => localStorage.setItem("meanwhile", JSON.stringify({
+        state: model.state, mode: model.mode, minutes: model.minutes, intent: model.intent, pack: model.pack, signals: model.signals.join(",")
+      }));
+      const ranked = () => {
+        const seed = params.get("seed") || new Date().toISOString().slice(0,13);
+        const pack = data.packs.find(item => item.id === model.pack);
+        const candidates = data.quests.filter(q => q.mode === model.mode);
+        return candidates.map(q => {
+          let score = 0;
+          if (model.quest === q.id) score += 10000;
+          if (pack?.quest_ids.includes(q.id)) score += 30;
+          if (q.states.includes(model.state)) score += 12;
+          if (q.minutes === model.minutes) score += 7;
+          else if (q.minutes < model.minutes) score += 4;
+          else score -= Math.min(6, q.minutes - model.minutes);
+          if (model.intent === "any" || q.intents.includes(model.intent)) score += model.intent === "any" ? 1 : 8;
+          score += q.signals.filter(x => model.signals.includes(x)).length * 6;
+          score += q.contexts.filter(x => model.context.includes(x) || x === "any").length * 4;
+          score += hash(`${seed}:${model.rotation}:${q.id}`) % 7;
+          return { q, score };
+        }).sort((a,b) => b.score - a.score);
+      };
+      const current = () => ranked()[0].q;
+
+      function renderControls() {
+        const stateButtons = states.map(([value, label]) => {
+          const button = document.createElement("button");
+          button.dataset.state = value;
+          button.classList.toggle("active", model.state === value);
+          button.textContent = label;
+          return button;
+        });
+        $("states").replaceChildren(...stateButtons);
+        $("states").querySelectorAll("button").forEach(button => button.onclick = () => {
+          model.state = button.dataset.state; model.quest = ""; save(); render();
+        });
+        $("mode").replaceChildren(...data.wait_modes.map(item => {
+          const option = document.createElement("option");
+          option.value = item.id;
+          option.textContent = item.label;
+          return option;
+        }));
+        $("mode").value = model.mode;
+        $("mode").onchange = e => {
+          model.mode = e.target.value;
+          model.minutes = model.mode === "micro" ? 1 : 5;
+          model.quest = "";
+          save(); render();
+        };
+        const supportedMinutes = [...new Set(data.quests.filter(q => q.mode === model.mode).map(q => q.minutes))].sort((a,b) => a-b);
+        if (!supportedMinutes.includes(model.minutes)) model.minutes = supportedMinutes[0];
+        $("minutes").replaceChildren(...supportedMinutes.map(value => {
+          const option = document.createElement("option");
+          option.value = String(value);
+          option.textContent = `${value} min`;
+          return option;
+        }));
+        $("minutes").value = model.minutes;
+        $("minutes").onchange = e => { model.minutes = +e.target.value; model.quest = ""; save(); render(); };
+        $("intent").replaceChildren(...["any","useful","learn-user","learn","play"].map(value => {
+          const option = document.createElement("option");
+          option.value = value;
+          option.textContent = intentLabels[value];
+          return option;
+        }));
+        $("intent").value = model.intent;
+        $("intent").onchange = e => { model.intent = e.target.value; model.quest = ""; save(); render(); };
+        $("pack").replaceChildren(...[
+          { id: "any", title: "Any pack" },
+          ...data.packs
+        ].map(item => {
+          const option = document.createElement("option");
+          option.value = item.id;
+          option.textContent = item.title;
+          return option;
+        }));
+        if (!["any", ...data.packs.map(item => item.id)].includes(model.pack)) model.pack = "any";
+        $("pack").value = model.pack;
+        $("pack").onchange = e => { model.pack = e.target.value; model.quest = ""; save(); render(); };
+      }
+
+      function renderPackLinks() {
+        $("pack-links").replaceChildren(...data.packs.map(pack => {
+          const link = document.createElement("a");
+          link.href = `packs/${encodeURIComponent(pack.id)}/`;
+          link.textContent = pack.title;
+          return link;
+        }));
+      }
+
+      function renderQuest() {
+        const q = current();
+        $("title").textContent = q.title;
+        $("prompt").textContent = q.prompt;
+        $("return-label").textContent = q.return_policy === "none" ? "No check-in needed" : q.return_policy === "optional" ? "Only if you want" : "Reply in chat";
+        $("receipt").textContent = q.receipt;
+        document.querySelector(".receipt").hidden = q.return_policy === "none";
+        const resource = resourceMap[q.resource];
+        $("resource").hidden = !resource;
+        if (resource) {
+          $("resource").href = `go/?id=${encodeURIComponent(q.id)}`;
+          const icon = document.createElement("span");
+          icon.textContent = "↗";
+          $("resource").replaceChildren(document.createTextNode(`Open ${resource.label}`), icon);
+        }
+        $("share-card").href = `share/?quest=${encodeURIComponent(q.id)}&model=${encodeURIComponent(modelNames[modelNameIndex] || "my AI")}`;
+        const reasons = [
+          states.find(x => x[0] === model.state)?.[1],
+          modeLabels[q.mode],
+          `${q.minutes} min`,
+          model.intent !== "any" ? intentLabels[model.intent] : null,
+          ...q.signals.filter(x => model.signals.includes(x)).slice(0,2)
+            .map(id => data.history_signals.find(x => x.id === id)?.label)
+        ].filter(Boolean);
+        $("reasons").replaceChildren(...reasons.map(reason => {
+          const item = document.createElement("b");
+          item.textContent = reason;
+          return item;
+        }));
+      }
+
+      function renderLibrary(query = "") {
+        const clean = query.toLowerCase();
+        const list = data.quests.filter(q =>
+          `${q.title} ${q.kind} ${q.prompt} ${q.contexts.join(" ")}`.toLowerCase().includes(clean)
+        );
+        $("quest-count").textContent = list.length;
+        const cards = list.map(q => {
+          const resource = resourceMap[q.resource];
+          const article = document.createElement("article");
+          article.className = "quest";
+          const meta = document.createElement("div");
+          meta.className = "meta";
+          const kind = document.createElement("span");
+          kind.textContent = kindLabels[q.kind] || q.kind;
+          const duration = document.createElement("span");
+          duration.textContent = `${q.minutes} min`;
+          meta.append(kind, duration);
+          const title = document.createElement("h3");
+          title.textContent = q.title;
+          const prompt = document.createElement("p");
+          prompt.textContent = q.prompt;
+          let action;
+          if (resource) {
+            action = document.createElement("a");
+            action.href = `go/?id=${encodeURIComponent(q.id)}`;
+            action.target = "_blank";
+            action.rel = "noreferrer";
+            action.setAttribute("aria-label", `Open ${resource.label}`);
+            action.textContent = "↗";
+          } else {
+            action = document.createElement("button");
+            action.dataset.use = q.id;
+            action.setAttribute("aria-label", `View ${q.title}`);
+            action.textContent = "›";
+          }
+          action.className = "use";
+          article.append(meta, title, prompt, action);
+          return article;
+        });
+        $("grid").replaceChildren(...cards);
+        $("grid").querySelectorAll("button").forEach(button => button.onclick = () => {
+          const q = data.quests.find(x => x.id === button.dataset.use);
+          model.state = q.states[0]; model.mode = q.mode; model.minutes = q.minutes; model.intent = q.intents[0]; model.quest = q.id;
+          model.rotation = hash(q.id); save(); render(); scrollTo({top:0,behavior:"smooth"});
+        });
+      }
+
+      function render() {
+        renderControls(); renderQuest();
+      }
+
+      $("refresh").onclick = () => { model.quest = ""; model.rotation++; renderQuest(); };
+      $("search").oninput = e => renderLibrary(e.target.value);
+      render();
+      renderPackLinks();
+      renderLibrary();
+      if (params.get("go") === "1") {
+        const destination = resourceMap[current().resource];
+        if (destination) location.replace(destination.url);
+      }
+    })();
+  </script>
+</body>
+</html>

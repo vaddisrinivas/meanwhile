@@ -1,0 +1,597 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Side quests from your AI: useful checks, relevant learning, finite games, and small resets while the main work continues.">
+  <meta property="og:title" content="Meanwhile | Side quests from your AI">
+  <meta property="og:description" content="Stop watching the spinner. Do one fitting thing while your AI keeps working.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="__INDEX_OG_IMAGE__">
+__INDEX_CANONICAL__
+  <title>Meanwhile | Side quests from your AI</title>
+  <style>
+    :root {
+      --ink: #171918;
+      --paper: #f4f3ed;
+      --white: #fffefa;
+      --line: #d5d4cc;
+      --muted: #686b65;
+      --red: #ed4b35;
+      --yellow: #f1ca4b;
+      --green: #267a58;
+    }
+    * { box-sizing: border-box; }
+    html { background: var(--paper); scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(rgba(23,25,24,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(23,25,24,.025) 1px, transparent 1px),
+        var(--paper);
+      background-size: 32px 32px;
+      font: 15px/1.5 Arial, Helvetica, sans-serif;
+    }
+    button, input, select { color: inherit; font: inherit; }
+    button, a, select { -webkit-tap-highlight-color: transparent; }
+    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 3px solid rgba(237,75,53,.3);
+      outline-offset: 2px;
+    }
+    .topbar {
+      height: 58px;
+      padding: 0 max(18px, 4vw);
+      color: white;
+      background: var(--ink);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 900; }
+    .mark {
+      width: 28px; height: 28px; display: grid; place-items: center;
+      color: var(--ink); background: var(--yellow); font: 800 15px ui-monospace, monospace;
+    }
+    .data-link { color: #d8dad5; font: 11px ui-monospace, monospace; text-decoration: none; }
+    .data-link:hover { color: white; text-decoration: underline; }
+    .controls {
+      max-width: 1440px; margin: auto; padding: 16px max(18px,4vw);
+      border-bottom: 1px solid var(--line);
+      display: flex; gap: 18px; align-items: center; justify-content: space-between;
+    }
+    .intro {
+      max-width: 1440px; margin: auto; padding: 72px max(18px,4vw) 38px;
+    }
+    .intro h1 {
+      max-width: 980px; margin: 0 0 20px;
+      font-size: clamp(48px,7vw,96px); line-height: .94;
+    }
+    .intro p { max-width: 760px; margin: 0; color: #4f524d; font-size: 18px; }
+    .pack-links {
+      max-width: 1440px; margin: auto; padding: 0 max(18px,4vw) 32px;
+      display: flex; flex-wrap: wrap; gap: 7px;
+    }
+    .pack-links a {
+      min-height: 34px; padding: 0 11px; display: inline-flex; align-items: center;
+      border: 1px solid var(--line); background: rgba(255,254,250,.58);
+      color: inherit; font-size: 12px; font-weight: 800; text-decoration: none;
+    }
+    .pack-links a:hover { border-color: var(--ink); background: var(--white); }
+    .model-switcher {
+      --cube-depth: .84em;
+      width: 3.5em; height: .84em; margin: 0 .05em;
+      display: inline-block; position: relative; vertical-align: -.06em;
+      perspective: 8em;
+    }
+    .model-cube {
+      width: 100%; height: 100%; position: relative; display: block;
+      transform-style: preserve-3d;
+      transition: transform .72s cubic-bezier(.2,.75,.2,1);
+    }
+    .model-face {
+      position: absolute; inset: 0;
+      display: grid; place-items: center;
+      border: .025em solid var(--ink);
+      color: var(--ink); background: var(--yellow);
+      font-size: .48em; font-weight: 900; line-height: 1;
+      overflow: hidden; white-space: nowrap;
+    }
+    .model-face:nth-child(2) { background: #72c7a4; }
+    .model-face:nth-child(3) { color: white; background: var(--red); }
+    .model-face:nth-child(4) { background: var(--white); }
+    .model-face.front { transform: translateZ(calc(var(--cube-depth) / 2)); }
+    .model-face.bottom { transform: rotateX(-90deg) translateZ(calc(var(--cube-depth) / 2)); }
+    .model-face.back { transform: rotateX(-180deg) translateZ(calc(var(--cube-depth) / 2)); }
+    .model-face.top { transform: rotateX(90deg) translateZ(calc(var(--cube-depth) / 2)); }
+    .model-switcher button {
+      position: absolute; inset: 0; z-index: 2;
+      width: 100%; height: 100%; padding: 0; cursor: pointer;
+      border: 0; background: transparent;
+    }
+    .sr-only {
+      width: 1px; height: 1px; padding: 0; margin: -1px;
+      position: absolute; overflow: hidden; clip: rect(0,0,0,0);
+      white-space: nowrap; border: 0;
+    }
+    .segments { display: flex; flex-wrap: wrap; gap: 4px; }
+    .segments button {
+      min-height: 34px; padding: 0 12px; cursor: pointer;
+      background: transparent; border: 1px solid transparent; font-size: 12px; font-weight: 800;
+    }
+    .segments button:hover { border-color: #aaa9a2; }
+    .segments button.active { color: white; background: var(--ink); }
+    .fields { display: flex; gap: 12px; }
+    .fields label { display: flex; gap: 7px; align-items: center; }
+    .fields span, .eyebrow, .receipt span, .reason > span, .library-kicker {
+      color: var(--muted); font: 10px ui-monospace, monospace; text-transform: uppercase;
+    }
+    select {
+      height: 34px; padding: 0 28px 0 8px; border-radius: 0;
+      border: 1px solid var(--line); background: var(--white); cursor: pointer;
+    }
+    .workspace { max-width: 1440px; min-height: 470px; margin: auto; }
+    .stage {
+      min-width: 0; padding: 60px max(24px,5vw); border-top: 1px solid var(--line);
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .eyebrow { color: var(--red); font-weight: 800; }
+    h1 {
+      max-width: 920px; margin: 16px 0 24px;
+      font-size: clamp(43px,6vw,84px); line-height: .96; text-wrap: balance;
+    }
+    .prompt { max-width: 700px; margin: 0; color: #454843; font-size: 18px; line-height: 1.55; }
+    .receipt {
+      max-width: 700px; margin: 30px 0; padding: 4px 0 4px 16px;
+      border-left: 3px solid var(--yellow); display: grid; gap: 4px;
+    }
+    .receipt strong { font-size: 14px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .action {
+      min-width: 150px; height: 48px; padding: 0 16px; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: space-between; gap: 18px;
+      border: 1px solid var(--ink); background: var(--ink); color: white;
+      font-weight: 800; text-decoration: none;
+    }
+    .action:hover { background: var(--red); border-color: var(--red); }
+    .action.secondary { color: var(--ink); background: transparent; }
+    .action.secondary:hover { background: var(--white); border-color: var(--ink); }
+    .refresh {
+      width: 48px; height: 48px; cursor: pointer; font-size: 20px;
+      border: 1px solid var(--line); background: transparent;
+    }
+    .reason { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
+    .reason b {
+      padding: 5px 7px; border: 1px solid #d3d1c9;
+      background: #e8e7e1; font-size: 10px; font-weight: 600;
+    }
+    aside { padding: 30px 24px; background: rgba(255,254,250,.72); }
+    .aside-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+    .aside-head h2 { margin: 0; font-size: 15px; }
+    .aside-head span { color: var(--muted); font: 10px ui-monospace, monospace; }
+    .signals { display: grid; gap: 7px; }
+    .signal {
+      min-height: 44px; padding: 7px 9px; cursor: pointer;
+      display: grid; grid-template-columns: 20px 1fr; gap: 10px; align-items: center;
+      border: 1px solid transparent; background: transparent; text-align: left;
+      font-size: 12px; line-height: 1.3;
+    }
+    .signal:hover { border-color: var(--line); }
+    .signal.active { border-color: var(--line); background: var(--white); }
+    .box {
+      width: 20px; height: 20px; border: 1px solid #aaa9a2;
+      display: grid; place-items: center; font-size: 12px; font-weight: 900;
+    }
+    .active .box { color: white; background: var(--green); border-color: var(--green); }
+    .library { padding: 70px max(18px,4vw) 90px; color: white; background: var(--ink); }
+    .library-head {
+      max-width: 1320px; margin: 0 auto 32px;
+      display: flex; justify-content: space-between; align-items: end; gap: 24px;
+    }
+    .library-kicker { color: var(--yellow); }
+    .library h2 { margin: 6px 0 0; font-size: 32px; }
+    .search {
+      width: min(310px,100%); padding: 0 3px 8px;
+      display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #696c67;
+    }
+    .search input { width: 100%; min-width: 0; color: white; background: transparent; border: 0; outline: 0; }
+    .search input::placeholder { color: #979a95; }
+    .grid {
+      max-width: 1320px; margin: auto; display: grid; gap: 1px;
+      grid-template-columns: repeat(4,minmax(0,1fr));
+    }
+    .quest {
+      min-height: 225px; padding: 21px; position: relative;
+      display: flex; flex-direction: column; background: #242725;
+    }
+    .quest:hover { background: #2c2f2d; }
+    .meta { display: flex; justify-content: space-between; color: #a9aca7; font: 9px ui-monospace,monospace; text-transform: uppercase; }
+    .quest h3 { margin: 20px 38px 9px 0; font-size: 18px; line-height: 1.2; }
+    .quest p { margin: 0 32px 0 0; color: #b8bbb6; font-size: 12px; line-height: 1.5; }
+    .use {
+      width: 32px; height: 32px; position: absolute; right: 18px; bottom: 18px;
+      cursor: pointer; color: white; background: transparent; border: 1px solid #5f625e;
+      display: grid; place-items: center; text-decoration: none;
+    }
+    .use:hover { color: var(--ink); background: var(--yellow); border-color: var(--yellow); }
+    footer {
+      padding: 18px max(18px,4vw); display: flex; justify-content: space-between; gap: 16px;
+      background: var(--yellow); font-size: 12px; font-weight: 800;
+    }
+    footer a { color: inherit; }
+    [hidden] { display: none !important; }
+    @media (max-width: 980px) {
+      .controls { align-items: flex-start; flex-direction: column; }
+      .stage { border-bottom: 1px solid var(--line); }
+      .grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+    }
+    @media (max-width: 620px) {
+      .segments { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); width: 100%; }
+      .segments button { padding: 0 6px; }
+      .fields { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+      .fields label { align-items: stretch; flex-direction: column; }
+      .fields select { width: 100%; }
+      .stage { min-height: 510px; padding: 52px 18px; }
+      .intro { padding: 54px 18px 30px; }
+      .pack-links { padding: 0 18px 26px; flex-wrap: nowrap; overflow-x: auto; }
+      .pack-links a { flex: 0 0 auto; }
+      h1 { font-size: 46px; overflow-wrap: anywhere; }
+      .prompt { font-size: 16px; }
+      aside { padding: 26px 18px 34px; }
+      .library { padding: 56px 18px 70px; }
+      .library-head { align-items: flex-start; flex-direction: column; }
+      .library h2 { font-size: 28px; }
+      .grid { grid-template-columns: 1fr; }
+      .quest { min-height: 205px; }
+      footer { align-items: flex-start; flex-direction: column; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation: none !important; }
+      .model-cube { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <!--
+  MEANWHILE AGENT CONTRACT
+  Read JSON from #luna-data. Choose one option from the catalogue.
+  Send a resource URL directly when one exists. Otherwise send the prompt in chat.
+  Do not send the user to this index unless they ask to browse.
+  Do not track completion. Ask for a reply only when the work needs their answer.
+  -->
+  <header class="topbar">
+    <div class="brand"><span class="mark">M</span><span>MEANWHILE</span></div>
+    <a class="data-link" href="quests.json">FOR AGENTS: JSON ↗</a>
+  </header>
+
+  <section class="controls">
+    <div class="segments" id="states" aria-label="Current state"></div>
+    <div class="fields">
+      <label><span>Mode</span><select id="mode"></select></label>
+      <label><span>Time</span><select id="minutes"></select></label>
+      <label><span>Intent</span><select id="intent"></select></label>
+      <label><span>Pack</span><select id="pack"></select></label>
+    </div>
+  </section>
+
+  <main>
+    <section class="intro">
+      <h1>
+        Side quests while
+        <span class="model-switcher">
+          <span class="sr-only">your model</span>
+          <span class="model-cube" id="model-cube" aria-hidden="true">
+            <span class="model-face front"></span>
+            <span class="model-face bottom"></span>
+            <span class="model-face back"></span>
+            <span class="model-face top"></span>
+          </span>
+          <button id="next-model" aria-label="Show another model name" title="Show another model"></button>
+        </span>
+        works.
+      </h1>
+      <p>Your AI picks one useful check, relevant lesson, finite game, or small reset. The main work keeps moving.</p>
+    </section>
+    <nav class="pack-links" id="pack-links" aria-label="Quest packs"></nav>
+    <div class="workspace">
+      <section class="stage">
+        <div class="eyebrow">A good option right now</div>
+        <h1 id="title"></h1>
+        <p class="prompt" id="prompt"></p>
+        <div class="receipt"><span id="return-label">Back in chat</span><strong id="receipt"></strong></div>
+        <div class="actions">
+          <a class="action" id="resource" target="_blank" rel="noreferrer" hidden></a>
+          <a class="action secondary" id="share-card">Share card <span>↗</span></a>
+          <button class="refresh" id="refresh" aria-label="Another quest" title="Another quest">↻</button>
+        </div>
+        <div class="reason"><span>Why this one</span><div id="reasons" style="display:contents"></div></div>
+      </section>
+    </div>
+
+    <section class="library">
+      <div class="library-head">
+        <div><div class="library-kicker">THE INDEX</div><h2><span id="quest-count"></span> side quests</h2></div>
+        <label class="search"><span>⌕</span><input id="search" placeholder="Search by mood or task..." aria-label="Search quests"></label>
+      </div>
+      <div class="grid" id="grid"></div>
+    </section>
+  </main>
+
+  <footer>
+    <span>Side quests from your AI. No account, streak, or completion tracking.</span>
+    <a href="share/">Make a share card</a>
+  </footer>
+
+  <script type="application/json" id="luna-data">
+__LUNA_DATA__
+  </script>
+
+  <script>
+    (() => {
+      const data = JSON.parse(document.getElementById("luna-data").textContent);
+      const $ = (id) => document.getElementById(id);
+      const states = [
+        ["busy","I’m bored"], ["blocked","I can unblock you"], ["proof","Check reality"],
+        ["taste","Want my take?"], ["frustrated","I need a reset"], ["learning","I’m curious"]
+      ];
+      const intentLabels = {
+        any: "Surprise me", useful: "Help the work", "learn-user": "Know me better", learn: "Learn", play: "Just for fun"
+      };
+      const modeLabels = { micro: "Quick quest", journey: "Small journey" };
+      const kindLabels = {
+        "learn-user": "know you", proof: "check", reality: "try it", decide: "choose",
+        test: "test", taste: "your take", scope: "protect", retrieve: "find",
+        observe: "notice", research: "look around", learn: "learn", play: "play", recover: "reset"
+      };
+      const params = new URLSearchParams(location.search);
+      const modelNames = (params.get("models") || "Luna|Codex|Claude|Gemini|GPT-5|Llama|Mistral|Qwen")
+        .split(/[|,]/)
+        .map(name => name.trim())
+        .filter(Boolean);
+      const modelFaces = [...document.querySelectorAll(".model-face")];
+      let modelTurn = 0;
+      let modelNameIndex = 0;
+      let modelTimer;
+      let automaticTurns = 0;
+      const motionPreference = matchMedia("(prefers-reduced-motion: reduce)");
+      modelFaces.forEach((face, index) => {
+        face.textContent = modelNames[index % modelNames.length];
+      });
+      function nextModel() {
+        const nextTurn = modelTurn + 1;
+        const incomingFace = nextTurn % modelFaces.length;
+        modelNameIndex = (modelNameIndex + 1) % modelNames.length;
+        modelFaces[incomingFace].textContent = modelNames[modelNameIndex];
+        modelTurn = nextTurn;
+        $("model-cube").style.transform = `rotateX(${modelTurn * 90}deg)`;
+      }
+      $("next-model").onclick = nextModel;
+      function stopModelRotation() {
+        clearInterval(modelTimer);
+        modelTimer = undefined;
+      }
+      function startModelRotation() {
+        if (motionPreference.matches || modelNames.length < 2 || automaticTurns >= 6 || modelTimer) return;
+        modelTimer = setInterval(() => {
+          if (document.hidden) return;
+          nextModel();
+          automaticTurns += 1;
+          if (automaticTurns >= 6) stopModelRotation();
+        }, 2400);
+      }
+      motionPreference.addEventListener("change", event => {
+        if (event.matches) stopModelRotation();
+        else startModelRotation();
+      });
+      startModelRotation();
+      const saved = JSON.parse(localStorage.getItem("meanwhile") || "{}");
+      const requestedMinutes = +(params.get("minutes") || saved.minutes || 5);
+      const model = {
+        state: params.get("state") || saved.state || "busy",
+        mode: params.get("mode") || saved.mode || (requestedMinutes === 1 ? "micro" : "journey"),
+        minutes: requestedMinutes,
+        intent: params.get("intent") || saved.intent || "any",
+        pack: params.get("pack") || saved.pack || "any",
+        quest: params.get("quest") || "",
+        signals: (params.get("signals") || saved.signals || data.history_signals.map(x => x.id).join(",")).split(",").filter(Boolean),
+        context: (params.get("context") || "").split(",").filter(Boolean),
+        rotation: 0
+      };
+      const requestedQuest = data.quests.find(quest => quest.id === model.quest);
+      if (requestedQuest) {
+        model.mode = requestedQuest.mode;
+        model.minutes = requestedQuest.minutes;
+      }
+      if (!data.wait_modes.some(mode => mode.id === model.mode)) model.mode = "journey";
+      const resourceMap = Object.fromEntries(data.resources.map(x => [x.id, x]));
+      const hash = (text) => {
+        let h = 2166136261;
+        for (let i = 0; i < text.length; i++) { h ^= text.charCodeAt(i); h = Math.imul(h, 16777619); }
+        return Math.abs(h);
+      };
+      const save = () => localStorage.setItem("meanwhile", JSON.stringify({
+        state: model.state, mode: model.mode, minutes: model.minutes, intent: model.intent, pack: model.pack, signals: model.signals.join(",")
+      }));
+      const ranked = () => {
+        const seed = params.get("seed") || new Date().toISOString().slice(0,13);
+        const pack = data.packs.find(item => item.id === model.pack);
+        const candidates = data.quests.filter(q => q.mode === model.mode);
+        return candidates.map(q => {
+          let score = 0;
+          if (model.quest === q.id) score += 10000;
+          if (pack?.quest_ids.includes(q.id)) score += 30;
+          if (q.states.includes(model.state)) score += 12;
+          if (q.minutes === model.minutes) score += 7;
+          else if (q.minutes < model.minutes) score += 4;
+          else score -= Math.min(6, q.minutes - model.minutes);
+          if (model.intent === "any" || q.intents.includes(model.intent)) score += model.intent === "any" ? 1 : 8;
+          score += q.signals.filter(x => model.signals.includes(x)).length * 6;
+          score += q.contexts.filter(x => model.context.includes(x) || x === "any").length * 4;
+          score += hash(`${seed}:${model.rotation}:${q.id}`) % 7;
+          return { q, score };
+        }).sort((a,b) => b.score - a.score);
+      };
+      const current = () => ranked()[0].q;
+
+      function renderControls() {
+        const stateButtons = states.map(([value, label]) => {
+          const button = document.createElement("button");
+          button.dataset.state = value;
+          button.classList.toggle("active", model.state === value);
+          button.textContent = label;
+          return button;
+        });
+        $("states").replaceChildren(...stateButtons);
+        $("states").querySelectorAll("button").forEach(button => button.onclick = () => {
+          model.state = button.dataset.state; model.quest = ""; save(); render();
+        });
+        $("mode").replaceChildren(...data.wait_modes.map(item => {
+          const option = document.createElement("option");
+          option.value = item.id;
+          option.textContent = item.label;
+          return option;
+        }));
+        $("mode").value = model.mode;
+        $("mode").onchange = e => {
+          model.mode = e.target.value;
+          model.minutes = model.mode === "micro" ? 1 : 5;
+          model.quest = "";
+          save(); render();
+        };
+        const supportedMinutes = [...new Set(data.quests.filter(q => q.mode === model.mode).map(q => q.minutes))].sort((a,b) => a-b);
+        if (!supportedMinutes.includes(model.minutes)) model.minutes = supportedMinutes[0];
+        $("minutes").replaceChildren(...supportedMinutes.map(value => {
+          const option = document.createElement("option");
+          option.value = String(value);
+          option.textContent = `${value} min`;
+          return option;
+        }));
+        $("minutes").value = model.minutes;
+        $("minutes").onchange = e => { model.minutes = +e.target.value; model.quest = ""; save(); render(); };
+        $("intent").replaceChildren(...["any","useful","learn-user","learn","play"].map(value => {
+          const option = document.createElement("option");
+          option.value = value;
+          option.textContent = intentLabels[value];
+          return option;
+        }));
+        $("intent").value = model.intent;
+        $("intent").onchange = e => { model.intent = e.target.value; model.quest = ""; save(); render(); };
+        $("pack").replaceChildren(...[
+          { id: "any", title: "Any pack" },
+          ...data.packs
+        ].map(item => {
+          const option = document.createElement("option");
+          option.value = item.id;
+          option.textContent = item.title;
+          return option;
+        }));
+        if (!["any", ...data.packs.map(item => item.id)].includes(model.pack)) model.pack = "any";
+        $("pack").value = model.pack;
+        $("pack").onchange = e => { model.pack = e.target.value; model.quest = ""; save(); render(); };
+      }
+
+      function renderPackLinks() {
+        $("pack-links").replaceChildren(...data.packs.map(pack => {
+          const link = document.createElement("a");
+          link.href = `packs/${encodeURIComponent(pack.id)}/`;
+          link.textContent = pack.title;
+          return link;
+        }));
+      }
+
+      function renderQuest() {
+        const q = current();
+        $("title").textContent = q.title;
+        $("prompt").textContent = q.prompt;
+        $("return-label").textContent = q.return_policy === "none" ? "No check-in needed" : q.return_policy === "optional" ? "Only if you want" : "Reply in chat";
+        $("receipt").textContent = q.receipt;
+        document.querySelector(".receipt").hidden = q.return_policy === "none";
+        const resource = resourceMap[q.resource];
+        $("resource").hidden = !resource;
+        if (resource) {
+          $("resource").href = `go/?id=${encodeURIComponent(q.id)}`;
+          const icon = document.createElement("span");
+          icon.textContent = "↗";
+          $("resource").replaceChildren(document.createTextNode(`Open ${resource.label}`), icon);
+        }
+        $("share-card").href = `share/?quest=${encodeURIComponent(q.id)}&model=${encodeURIComponent(modelNames[modelNameIndex] || "my AI")}`;
+        const reasons = [
+          states.find(x => x[0] === model.state)?.[1],
+          modeLabels[q.mode],
+          `${q.minutes} min`,
+          model.intent !== "any" ? intentLabels[model.intent] : null,
+          ...q.signals.filter(x => model.signals.includes(x)).slice(0,2)
+            .map(id => data.history_signals.find(x => x.id === id)?.label)
+        ].filter(Boolean);
+        $("reasons").replaceChildren(...reasons.map(reason => {
+          const item = document.createElement("b");
+          item.textContent = reason;
+          return item;
+        }));
+      }
+
+      function renderLibrary(query = "") {
+        const clean = query.toLowerCase();
+        const list = data.quests.filter(q =>
+          `${q.title} ${q.kind} ${q.prompt} ${q.contexts.join(" ")}`.toLowerCase().includes(clean)
+        );
+        $("quest-count").textContent = list.length;
+        const cards = list.map(q => {
+          const resource = resourceMap[q.resource];
+          const article = document.createElement("article");
+          article.className = "quest";
+          const meta = document.createElement("div");
+          meta.className = "meta";
+          const kind = document.createElement("span");
+          kind.textContent = kindLabels[q.kind] || q.kind;
+          const duration = document.createElement("span");
+          duration.textContent = `${q.minutes} min`;
+          meta.append(kind, duration);
+          const title = document.createElement("h3");
+          title.textContent = q.title;
+          const prompt = document.createElement("p");
+          prompt.textContent = q.prompt;
+          let action;
+          if (resource) {
+            action = document.createElement("a");
+            action.href = `go/?id=${encodeURIComponent(q.id)}`;
+            action.target = "_blank";
+            action.rel = "noreferrer";
+            action.setAttribute("aria-label", `Open ${resource.label}`);
+            action.textContent = "↗";
+          } else {
+            action = document.createElement("button");
+            action.dataset.use = q.id;
+            action.setAttribute("aria-label", `View ${q.title}`);
+            action.textContent = "›";
+          }
+          action.className = "use";
+          article.append(meta, title, prompt, action);
+          return article;
+        });
+        $("grid").replaceChildren(...cards);
+        $("grid").querySelectorAll("button").forEach(button => button.onclick = () => {
+          const q = data.quests.find(x => x.id === button.dataset.use);
+          model.state = q.states[0]; model.mode = q.mode; model.minutes = q.minutes; model.intent = q.intents[0]; model.quest = q.id;
+          model.rotation = hash(q.id); save(); render(); scrollTo({top:0,behavior:"smooth"});
+        });
+      }
+
+      function render() {
+        renderControls(); renderQuest();
+      }
+
+      $("refresh").onclick = () => { model.quest = ""; model.rotation++; renderQuest(); };
+      $("search").oninput = e => renderLibrary(e.target.value);
+      render();
+      renderPackLinks();
+      renderLibrary();
+      if (params.get("go") === "1") {
+        const destination = resourceMap[current().resource];
+        if (destination) location.replace(destination.url);
+      }
+    })();
+  </script>
+</body>
+</html>

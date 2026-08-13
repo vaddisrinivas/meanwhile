@@ -1,0 +1,16 @@
+{
+  "name": "meanwhile-side-quests",
+  "version": "0.4.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "build:check": "node scripts/build.mjs --check",
+    "validate": "node scripts/validate.mjs",
+    "test": "node --test",
+    "check": "npm run validate && npm run build:check && npm test"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

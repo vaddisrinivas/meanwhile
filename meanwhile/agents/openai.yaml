@@ -1,0 +1,4 @@
+interface:
+  display_name: "Meanwhile"
+  short_description: "Side quests while the main work continues"
+  default_prompt: "Use $meanwhile to offer one restrained, context-aware side quest while you keep working."

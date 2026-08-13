@@ -1,0 +1,64 @@
+{
+  "guides": [
+    {
+      "slug": "what-to-do-while-claude-code-works",
+      "title": "What to do while Claude Code works",
+      "description": "Use a real wait without watching the terminal or falling into an endless feed.",
+      "intro": "A coding agent can work for minutes without needing you. The useful move is not to supervise every line. Pick something shorter than the wait, keep notifications quiet, and let the agent ask when it genuinely needs input.",
+      "sections": [
+        { "title": "For a one-minute wait", "body": "Stay in the room. Look away from the screen, name the claim you will verify later, or decide what done means. A micro quest should not open another tab." },
+        { "title": "For five minutes or more", "body": "Choose one bounded activity: a chess sprint, a short walk, one relevant concept, or a complete click path through the feature being built. Stop when the activity ends, not when a feed runs out." },
+        { "title": "When Claude needs judgment", "body": "Taste and reality are better uses of a person than busywork. Give one sharp opinion, inspect the actual interface, or define the proof level the task requires." }
+      ],
+      "quest_ids": ["look-far", "chess-storm", "whole-click-path", "three-second-verdict", "watch-debugging"]
+    },
+    {
+      "slug": "what-to-do-while-codex-works",
+      "title": "What to do while Codex works",
+      "description": "Side quests for long coding runs, tests, builds, browser checks, and device work.",
+      "intro": "Codex can continue through implementation and verification while you step away. Use the wait for something with a clear edge: one check, one reset, one idea, or one tiny game. Keep required questions in the coding task so Codex can interrupt normally.",
+      "sections": [
+        { "title": "Use the wait honestly", "body": "Do not start a ten-minute activity for a ninety-second command. Use a no-tab micro quest for short waits and a small journey only when Codex projects at least five unattended minutes." },
+        { "title": "Match the current task", "body": "Learning sticks when it touches the code already open. If the task involves OAuth, trace an OAuth exchange. If it involves Compose, check the exact performance pattern under review." },
+        { "title": "Come back to proof", "body": "The side quest is not evidence that the work succeeded. When Codex finishes, inspect the claimed proof boundary: source, local run, browser, device, live service, or your own acceptance." }
+      ],
+      "quest_ids": ["oauth-flow-trace", "compose-performance-spot", "proof-ladder", "notice-three-sounds", "assumption-bounty"]
+    },
+    {
+      "slug": "what-to-do-while-cursor-generates",
+      "title": "What to do while Cursor generates code",
+      "description": "Small useful, playful, and restorative activities for Cursor agent waits.",
+      "intro": "Cursor's agent can edit across files while you remain in the editor. That makes it tempting to watch every change. A better default is a bounded side quest that ends before the run and leaves your attention cleaner than a social feed would.",
+      "sections": [
+        { "title": "Do not create another project", "body": "A wait activity should be tiny. Test one visible interaction, remove one unnecessary idea, sketch badly, or read one directly relevant explanation." },
+        { "title": "Use your eyes where they matter", "body": "Generated source cannot prove that a control feels right or that a page works as a whole. A three-second verdict or five-click smoke test supplies judgment the editor cannot infer." },
+        { "title": "Keep it optional", "body": "Close the activity whenever Cursor is ready. Games and recovery need no receipt, streak, or productivity story. The coding task remains the source of truth." }
+      ],
+      "quest_ids": ["five-click-smoke", "remove-one", "draw-badly", "watch-design", "look-far"]
+    },
+    {
+      "slug": "stop-doomscrolling-while-ai-codes",
+      "title": "Stop doomscrolling while AI codes",
+      "description": "Replace an open-ended feed with one activity that has a natural ending.",
+      "intro": "The problem is not taking a break. The problem is choosing a break with no stopping point. Coding-agent waits create small attention gaps, and an infinite feed is designed to expand into them. Use something finite instead.",
+      "sections": [
+        { "title": "Choose an edge", "body": "One puzzle sprint, one song, one random article, one glass of water, or one five-minute walk all tell you when they are over. That edge makes returning easy." },
+        { "title": "Keep short waits tabless", "body": "For less than two minutes, do not open a site at all. Look far away, notice three sounds, or write the acceptance line for the feature being built." },
+        { "title": "Do not optimize the break", "body": "A restorative or playful quest does not need tracking. No streak, completion button, or score is required unless the activity itself happens to be a game." }
+      ],
+      "quest_ids": ["notice-three-sounds", "water-reset", "chess-storm", "make-tiny-song", "one-color-walk"]
+    },
+    {
+      "slug": "five-minute-breaks-for-vibe-coding",
+      "title": "Five-minute breaks for vibe coding",
+      "description": "Finite side quests for the gaps between prompts, builds, tests, and agent runs.",
+      "intro": "Vibe coding alternates between intense decisions and periods where the agent does the mechanical work. The best five-minute break changes your mode without stealing the next hour. Pick one quest, not a menu.",
+      "sections": [
+        { "title": "Reset", "body": "Walk until you find five versions of one color, get water, or listen for three layers of sound. These work because they move attention away from the same visual field." },
+        { "title": "Play", "body": "Use a three-minute chess sprint, a bad drawing, or a six-word story. Keep the rule small enough that finishing is obvious." },
+        { "title": "Help the product", "body": "When the agent needs taste, give a first impression or remove one thing. When it needs proof, test the whole click path instead of reading another generated summary." }
+      ],
+      "quest_ids": ["one-color-walk", "six-word-story", "three-second-verdict", "whole-click-path", "strange-internet-toy"]
+    }
+  ]
+}
