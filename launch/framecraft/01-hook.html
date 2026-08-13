@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="scene.css">
+  <style>
+    body { color: #fffefa; background: #171918; }
+    .frame { padding-top: 68px; }
+    .topline { color: #d8dad5; }
+    h1 { max-width: 1250px; margin-top: 54px; font-size: 110px; }
+    .terminal {
+      width: 1540px; height: 390px; margin-top: 52px; padding: 34px 42px;
+      border: 1px solid #4b4f4c; background: #0f1110;
+      box-shadow: 18px 18px 0 #f1ca4b;
+      font: 28px/1.7 ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .prompt { color: #f1ca4b; }
+    .task { color: #fffefa; }
+    .status { margin-top: 28px; color: #72c7a4; }
+    .dot { animation: pulse 1s infinite; }
+    .accent { color: #f1ca4b; }
+  </style>
+</head>
+<body>
+  <main class="frame">
+    <div class="topline rise"><span>Agent run / 05:12 remaining</span><span>Meanwhile</span></div>
+    <h1 class="rise-2">Your agent is working.<br><span class="accent">Stop watching it.</span></h1>
+    <section class="terminal rise-3">
+      <div><span class="prompt">$</span> <span class="task">Add OAuth login and test the callback flow.</span></div>
+      <div class="status"><span class="dot">●</span> Implementing and running checks...</div>
+    </section>
+  </main>
+</body>
+</html>
+

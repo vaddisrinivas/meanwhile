@@ -1,0 +1,41 @@
+{
+  "scenes": [
+    {
+      "custom_html": "launch/framecraft/01-hook.html",
+      "narration": "Your agent is working. Stop watching it.",
+      "duration": 4.4
+    },
+    {
+      "custom_html": "launch/framecraft/02-quest.html",
+      "narration": "Meanwhile offers one fitting side quest, while the main work keeps moving.",
+      "duration": 5.4
+    },
+    {
+      "custom_html": "launch/framecraft/03-options.html",
+      "narration": "Learn something relevant. Reset. Play. Or test what the agent built.",
+      "duration": 5.2
+    },
+    {
+      "custom_html": "launch/framecraft/04-restraint.html",
+      "narration": "Exactly once per session. Optional. No account, streak, or completion tracking.",
+      "duration": 5.6
+    },
+    {
+      "custom_html": "launch/framecraft/05-proof.html",
+      "narration": "It is one skill plus a static catalogue, ready for every major coding agent.",
+      "duration": 5.8
+    },
+    {
+      "custom_html": "launch/framecraft/06-end.html",
+      "narration": "Meanwhile. Side quests from your AI.",
+      "duration": 4.2
+    }
+  ],
+  "output": "assets/meanwhile-demo.mp4",
+  "width": 1920,
+  "height": 1080,
+  "fps": 24,
+  "voice": "andrew",
+  "transition": "crossfade",
+  "transition_duration": 0.35
+}

@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="scene.css">
+  <style>
+    .quest {
+      width: 1420px; min-height: 480px; margin-top: 64px; padding: 58px 64px;
+      border: 2px solid var(--ink); background: var(--white);
+      box-shadow: 20px 20px 0 var(--yellow);
+      animation: pop .7s cubic-bezier(.16,1,.3,1) .35s both;
+    }
+    .quest-meta { display: flex; justify-content: space-between; color: var(--red); font: 900 22px/1 ui-monospace, monospace; text-transform: uppercase; }
+    .quest h2 { max-width: 1100px; margin: 42px 0 28px; font-size: 78px; line-height: 1; }
+    .quest p { margin: 0; color: #454843; font-size: 30px; }
+    .button { width: 270px; height: 62px; margin-top: 38px; display: grid; place-items: center; color: white; background: var(--ink); font-size: 22px; font-weight: 900; }
+  </style>
+</head>
+<body>
+  <main class="frame">
+    <div class="topline rise"><div class="brand"><span class="mark">M</span><span>Meanwhile</span></div><span>One fitting thing</span></div>
+    <section class="quest">
+      <div class="quest-meta"><span>Learn your stack</span><span>10 min</span></div>
+      <h2>Trace one OAuth exchange</h2>
+      <p>Follow authorization, callback, token exchange, then write the trust boundary.</p>
+      <div class="button">Open directly →</div>
+    </section>
+  </main>
+</body>
+</html>
+

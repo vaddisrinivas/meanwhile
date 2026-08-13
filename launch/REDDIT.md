@@ -12,7 +12,9 @@ I made an open Agent Skill called Meanwhile. It reads the current task and gives
 
 It has hard restraint rules: once per session, no offers during active debugging or required input, stop after a decline, and no tracking whether you finished. The website is only the public catalogue; the agent sends the actual prompt or URL directly.
 
-Demo: NOT_CREATED. Storyboard: `launch/FRAMECRAFT_STORYBOARD.md`.
+Demo: https://vaddisrinivas.github.io/meanwhile/assets/meanwhile-demo.mp4
+
+Try it: https://vaddisrinivas.github.io/meanwhile/
 
 Repo: https://github.com/vaddisrinivas/meanwhile
 
@@ -30,6 +32,8 @@ The interesting part is contextual selection. OAuth work can produce an OAuth fl
 
 It is static and open: one `SKILL.md`, one JSON catalogue, and a GitHub Pages site. No account or completion tracking.
 
-Demo: NOT_CREATED. Storyboard: `launch/FRAMECRAFT_STORYBOARD.md`.
+Demo: https://vaddisrinivas.github.io/meanwhile/assets/meanwhile-demo.mp4
+
+Try it: https://vaddisrinivas.github.io/meanwhile/
 
 Source: https://github.com/vaddisrinivas/meanwhile

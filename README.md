@@ -4,6 +4,10 @@
 
 Meanwhile gives a person one fitting, finite thing to do while a coding agent keeps working: a no-tab micro quest, relevant learning, a small game, a reset, or a useful reality check.
 
+[![Meanwhile demo](assets/meanwhile-demo.gif)](assets/meanwhile-demo.mp4)
+
+*Made with [Framecraft](https://github.com/vaddisrinivas/framecraft). Select the preview for the narrated 1080p video.*
+
 ## Product thesis
 
 When the agent is busy, the human should get one optional invitation—not another dashboard to operate. Meanwhile is a skill plus a static website: the host agent chooses and sends the quest, while the site provides a browsable catalogue, pack pages, guides, and share cards.
@@ -16,7 +20,7 @@ It is not a separate agent, account, streak system, completion tracker, callback
 
 - Website: <https://vaddisrinivas.github.io/meanwhile/> (GitHub Pages verified).
 - Repository: <https://github.com/vaddisrinivas/meanwhile> (public).
-- Demo video: `NOT_CREATED`; see [`launch/FRAMECRAFT_STORYBOARD.md`](launch/FRAMECRAFT_STORYBOARD.md) for the complete production handoff.
+- Demo video: [`assets/meanwhile-demo.mp4`](assets/meanwhile-demo.mp4), with editable Framecraft source in [`launch/framecraft/`](launch/framecraft/).
 
 ## Install
 

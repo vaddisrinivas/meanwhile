@@ -18,7 +18,9 @@ While it worked, it sent me to trace one authorization-code exchange instead of 
 
 That is Meanwhile: side quests selected from the current task, wait time, misses, and preferences. One offer, then restraint.
 
-Demo video: NOT_CREATED. Storyboard: `launch/FRAMECRAFT_STORYBOARD.md`.
+Demo: https://vaddisrinivas.github.io/meanwhile/assets/meanwhile-demo.mp4
+
+Try it: https://vaddisrinivas.github.io/meanwhile/
 
 ## Builder
 

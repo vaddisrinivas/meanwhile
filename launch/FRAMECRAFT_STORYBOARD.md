@@ -1,18 +1,22 @@
-# FrameCraft product illustration handoff
+# Framecraft product illustration
 
-**Status: NOT_CREATED.** No FrameCraft project or exported video exists.
+**Status: CREATED.** The editable source, audio MP4, and README GIF are in the repository.
 
-## Why
+## Outputs
 
-The current official FrameCraft product is an AI-native animatic and pre-production service for agencies and production companies. Its public workflow starts with a guided seven-step brief, asks for contact details, produces an estimate, and follows with a dedicated call; it is not a self-serve project/export tool available in this workspace. Source: <https://www.framecraft.agency/> and <https://www.framecraft.agency/quotation>.
+- Narrated video: `assets/meanwhile-demo.mp4`
+- README preview: `assets/meanwhile-demo.gif`
+- Scene config: `launch/framecraft/scenes.json`
+- Editable HTML scenes: `launch/framecraft/01-hook.html` through `06-end.html`
+- Live-site capture: `launch/framecraft/site.png`
 
-No personal details were submitted and no export was fabricated.
+Rendered with [vaddisrinivas/framecraft](https://github.com/vaddisrinivas/framecraft). Validation passed for H.264 video, AAC audio, 1920x1080 resolution, matched stream durations, and no black frames.
 
 ## Brief
 
 - Product: Meanwhile — a skill that offers one fitting side quest while an AI agent keeps working.
 - Audience: people using Codex, Claude Code, Cursor, Gemini CLI, OpenCode, or GitHub Copilot.
-- Runtime: 35 seconds, 16:9, 1920×1080, clean captions, light sound bed.
+- Runtime: 28.7 seconds, 16:9, 1920x1080, visible on-screen copy, narrated voiceover.
 - Tone: warm, clever, finite, human; never productivity guilt.
 - End card: `Meanwhile — Side quests from your AI.`
 
@@ -20,13 +24,12 @@ No personal details were submitted and no export was fabricated.
 
 | Time | Picture | Voiceover | Caption |
 |---|---|---|---|
-| 0–4s | Dark terminal: `Add OAuth login and test the callback flow.` | “Your coding agent is busy.” | Your coding agent is busy.
-| 4–8s | Agent progress continues; a small Meanwhile card appears. | “That does not mean you need another feed.” | You need one finite thing.
-| 8–14s | Card: `Meanwhile \| Trace one OAuth exchange \| 10 min`; direct OAuth resource opens. | “Meanwhile offers one fitting side quest.” | One fitting side quest.
-| 14–20s | Fast sequence: trace the exchange, look away, return to terminal. | “Learn something relevant, reset, play, or test what the agent built.” | Learn. Reset. Play. Test.
-| 20–26s | Skill file and catalogue JSON side by side; exactly one quest highlighted. | “It is a skill, not another agent.” | Skill plus static catalogue.
-| 26–31s | Restraint labels appear: `once`, `optional`, `no streaks`, `no callback`. | “No account. No streak. No completion theater.” | Optional by design.
-| 31–35s | Social image / site catalogue; end card. | “Meanwhile. Side quests from your AI.” | Meanwhile — Side quests from your AI.
+| 0–4s | Dark terminal: `Add OAuth login and test the callback flow.` | “Your agent is working. Stop watching it.” | Your agent is working. Stop watching it.
+| 4–9s | One Meanwhile card appears with an OAuth learning quest. | “Meanwhile offers one fitting side quest, while the main work keeps moving.” | Trace one OAuth exchange.
+| 9–14s | Four finite paths arrive in sequence. | “Learn something relevant. Reset. Play. Or test what the agent built.” | Learn. Reset. Play. Test.
+| 14–19s | Restraint labels appear: `once`, `optional`, `no account`, `no streak`, `no completion tracking`. | “Exactly once per session. Optional. No account, streak, or completion tracking.” | Optional by design.
+| 19–25s | The live catalogue appears beside `52 quests` and `7 packs`. | “It is one skill plus a static catalogue, ready for every major coding agent.” | One skill. One static catalogue.
+| 25–29s | Brand and live URL end card. | “Meanwhile. Side quests from your AI.” | Meanwhile — Side quests from your AI.
 
 ## Asset list
 
@@ -37,11 +40,11 @@ No personal details were submitted and no export was fabricated.
 - Terminal mockup with the OAuth task and progress line; use fictional/local text only.
 - Captions in high-contrast white with red accent; no user data, credentials, or browser cookies.
 
-## FrameCraft handoff
+## Re-render
 
-1. Start from this brief and shot list.
-2. Create visual development stills for the terminal, side-quest card, catalogue, and end card.
-3. Assemble a short animatic with the stated timing.
-4. Add restrained voiceover, captions, and a light sound sketch.
-5. Review each shot against the product claim: one optional quest; no separate agent; no tracking.
-6. Export MP4 H.264, 1920×1080, 30 fps, 35 seconds, plus captioned and clean masters.
+```sh
+python /path/to/framecraft.py render launch/framecraft/scenes.json
+ffmpeg -y -i assets/meanwhile-demo.mp4 -vf "fps=12,scale=640:360:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=128[p];[s1][p]paletteuse=dither=bayer:bayer_scale=3" assets/meanwhile-demo.gif
+```
+
+Review each export against the product claim: one optional quest, no separate agent, and no completion tracking.
