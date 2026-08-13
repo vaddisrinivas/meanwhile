@@ -14,8 +14,8 @@ It is not a separate agent, account, streak system, completion tracker, callback
 
 ## Launch status
 
-- Website target: <https://vaddisrinivas.github.io/meanwhile/> (verify after the first GitHub Pages deployment).
-- Repository target: <https://github.com/vaddisrinivas/meanwhile> (public launch pending).
+- Website: <https://vaddisrinivas.github.io/meanwhile/> (GitHub Pages verified).
+- Repository: <https://github.com/vaddisrinivas/meanwhile> (public).
 - Demo video: `NOT_CREATED`; see [`launch/FRAMECRAFT_STORYBOARD.md`](launch/FRAMECRAFT_STORYBOARD.md) for the complete production handoff.
 
 ## Install

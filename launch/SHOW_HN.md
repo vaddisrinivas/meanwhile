@@ -22,8 +22,8 @@ The restraint rules matter more than the recommendations: once per work session,
 
 It is one `SKILL.md` plus a static JSON catalogue, so it works with Codex, Claude Code, Cursor, Gemini CLI, OpenCode, and Copilot. The site is plain HTML and JavaScript on GitHub Pages.
 
-Site: [SITE URL]
+Site: https://vaddisrinivas.github.io/meanwhile/
 
-Source: [REPOSITORY URL]
+Source: https://github.com/vaddisrinivas/meanwhile
 
 I would especially value feedback on when an offer feels useful versus annoying, and which quest defaults are actually worth keeping.

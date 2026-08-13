@@ -8,7 +8,7 @@ Meanwhile is an open Agent Skill for the odd five-minute gap created by coding a
 
 No account. No streak. No completion tracking.
 
-[SITE URL]
+https://vaddisrinivas.github.io/meanwhile/
 
 ## Demo-led
 
@@ -18,7 +18,7 @@ While it worked, it sent me to trace one authorization-code exchange instead of 
 
 That is Meanwhile: side quests selected from the current task, wait time, misses, and preferences. One offer, then restraint.
 
-[DEMO URL]
+Demo video: NOT_CREATED. Storyboard: `launch/FRAMECRAFT_STORYBOARD.md`.
 
 ## Builder
 
@@ -26,4 +26,4 @@ Coding agents created a new product surface: the person waiting beside them.
 
 Most products fill it with another dashboard. I built a plain `SKILL.md` and JSON catalogue instead. The current agent already knows the task and the person; it only needed better defaults and hard rules for when to stay quiet.
 
-[REPOSITORY URL]
+https://github.com/vaddisrinivas/meanwhile
